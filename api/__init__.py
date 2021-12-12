@@ -10,6 +10,10 @@ def init_app() -> Flask:
     CORS(app)
     _register_error_handlers(app)
     _register_blueprints(app)
-    _initialize_graph_connection()
-    _initialize_signing_keys()
     return app
+
+def _register_error_handlers(app):
+    pass
+
+def _register_blueprints(app):
+    pass
