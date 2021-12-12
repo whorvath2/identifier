@@ -1,8 +1,6 @@
-import pathlib
-from pathlib import Path
 import uuid
 from os import path
-import random
+from pathlib import Path
 
 from errors.BadRepositoryError import BadRepositoryError
 from errors.IllegalArgumentError import IllegalArgumentError
@@ -13,7 +11,7 @@ from repositories.IdRepositoryType import IdRepositoryType
 VALID_CHARS: str = "0123456789abcdef"
 
 
-class IdRepository(object):
+class IdRepository:
     """
     A repository for creating new identifiers and serializing them out to disk, and for
     validating identifier values.
@@ -22,7 +20,7 @@ class IdRepository(object):
     _readers: list["IdRepository"] = None
     _writer: "IdRepository" = None
     _max_reader_count: int = 1
-    _reader_index: 0
+    _reader_index: int = 0
 
     def __init__(
         self, type: IdRepositoryType, base_path: str, max_reader_count: int
@@ -71,7 +69,7 @@ class IdRepository(object):
         READER instance.
         """
         if cls._writer is None and kwargs["type"] is IdRepositoryType.WRITER:
-            cls._writer = super().__new__(cls, *args, **kwargs)
+            cls._writer = super(IdRepository, cls).__new__(cls)
             return cls._writer
 
         else:
@@ -86,6 +84,6 @@ class IdRepository(object):
                 )
                 return reader
 
-            new_reader = super().__new__(cls, *args, **kwargs)
+            new_reader = super(IdRepository, cls).__new__(cls)
             cls._readers.append(new_reader)
             return new_reader
