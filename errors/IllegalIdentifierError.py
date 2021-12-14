@@ -8,8 +8,8 @@ class IllegalIdentifierError(IdentifierError):
     Thrown when...
     """
 
-    def __init__(self, message: str):
+    def __init__(self):
         super().__init__(
-            message="The supplied identifier includes illegal characters.",
+            message="The supplied identifier is invalid.",
             error_code=HTTPStatus.BAD_REQUEST,
         )
