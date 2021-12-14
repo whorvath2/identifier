@@ -19,9 +19,6 @@ def mock_id_repository_root(request):
     os.makedirs(name=temp_path, mode=500, exist_ok=True)
     yield pathlib.Path(temp_path)
 
-    def path():
-        return temp_path
-
     def teardown():
         print("Teardown")
         shutil.rmtree(path=temp_path, ignore_errors=False)
