@@ -3,7 +3,7 @@ import os
 import uuid
 import getpass
 import time
-from os import path
+from os import path, PathLike
 from pathlib import Path
 from typing import Final
 
@@ -69,13 +69,13 @@ class IdRepository:
     def __init__(
         self,
         repository_type: IdRepositoryType,
-        base_path: str,
+        base_path: (str, PathLike) = config.BASE_PATH,
     ) -> None:
         if not isinstance(repository_type, IdRepositoryType):
             raise IllegalArgumentError("type must be an IdRepositoryType.")
-        if not base_path or not isinstance(base_path, (str, Path, os.PathLike)):
+        if not base_path or not isinstance(base_path, (str, PathLike)):
             raise IllegalArgumentError(
-                "base_path must be a non-empty string, Path, or os.PathLike object."
+                "base_path must be a non-empty string or PathLike object."
             )
         self.type = repository_type
         self.base_path: Path = Path(base_path)
