@@ -7,6 +7,7 @@ from os import path
 from pathlib import Path
 from typing import Final
 
+import config
 from errors.BadProcessError import BadProcessError
 from errors.BadRepositoryError import BadRepositoryError
 from errors.IllegalArgumentError import IllegalArgumentError
@@ -61,7 +62,6 @@ class IdRepository:
 
     _readers: list["IdRepository"] = None
     _writer: "IdRepository" = None
-    _max_reader_count: int = 1
     _reader_index: int = 0
     _serialization_failures: int = 0  # A crude indicator of what's going on that can be
     # included in log messages. May be removed or replaced in a future release.
@@ -70,19 +70,13 @@ class IdRepository:
         self,
         repository_type: IdRepositoryType,
         base_path: str,
-        max_reader_count: int = 1,
     ) -> None:
-
-        if max_reader_count <= 0:
-            raise IllegalArgumentError("max_reader count must be greater than zero.")
         if not isinstance(repository_type, IdRepositoryType):
             raise IllegalArgumentError("type must be an IdRepositoryType.")
         if not base_path or not isinstance(base_path, (str, Path, os.PathLike)):
             raise IllegalArgumentError(
                 "base_path must be a non-empty string, Path, or os.PathLike object."
             )
-
-        self.max_reader_count = max_reader_count
         self.type = repository_type
         self.base_path: Path = Path(base_path)
 
@@ -199,10 +193,10 @@ class IdRepository:
         else:
             if cls._readers is None:
                 cls._readers = []
-            elif len(cls._readers) > cls._max_reader_count:
+            elif len(cls._readers) > config.MAX_READER_COUNT:
                 cls._reader_index = (
                     0
-                    if cls._reader_index == cls._max_reader_count - 1
+                    if cls._reader_index == config.MAX_READER_COUNT - 1
                     else (cls._reader_index + 1)
                 )
                 reader = cls._readers[cls._reader_index]

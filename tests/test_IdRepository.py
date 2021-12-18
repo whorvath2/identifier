@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import re
 
+import config
 from errors.BadRepositoryError import BadRepositoryError
 from errors.IllegalArgumentError import IllegalArgumentError
 from errors.IllegalIdentifierError import IllegalIdentifierError
@@ -10,19 +11,36 @@ from api.repositories.IdRepository import IdRepository, _is_valid, _generate_id
 from api.repositories.IdRepositoryType import IdRepositoryType
 
 
-def test_id_repository_construction():
+def test_id_repository_construction(mock_id_repository_root):
     with pytest.raises(IllegalArgumentError):
-        IdRepository(
-            repository_type=IdRepositoryType.READER, base_path="./", max_reader_count=-1
-        )
-    with pytest.raises(IllegalArgumentError):
-        IdRepository(repository_type="aString", base_path="./", max_reader_count=1)
+        IdRepository(repository_type="aString", base_path="./")
     with pytest.raises(BadRepositoryError):
         IdRepository(
-            repository_type=IdRepositoryType.READER,
+            repository_type=IdRepositoryType.WRITER,
             base_path="./foobar",
-            max_reader_count=1,
         )
+
+    IdRepository._writer = None
+    repository: IdRepository = IdRepository(
+        repository_type=IdRepositoryType.WRITER,
+        base_path=mock_id_repository_root,
+    )
+    assert repository._writer == repository
+    assert len(repository._readers) <= config.MAX_READER_COUNT
+
+    IdRepository._readers = []
+    repository = IdRepository(
+        repository_type=IdRepositoryType.READER,
+        base_path=mock_id_repository_root,
+    )
+    assert IdRepository._readers[0] == repository
+
+    config.MAX_READER_COUNT = 1
+    another_repository: IdRepository = IdRepository(
+        repository_type=IdRepositoryType.READER,
+        base_path=mock_id_repository_root,
+    )
+    assert IdRepository._readers[0] == repository
 
 
 def test_validity_tester():
@@ -45,7 +63,6 @@ def test_repository_create_id_fails_with_illegal_retries_values(
     repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.WRITER,
         base_path=mock_id_repository_root,
-        max_reader_count=1,
     )
     with pytest.raises(IllegalArgumentError):
         repository.create_id(retries=None)
@@ -59,7 +76,6 @@ def test_repository_calculates_paths_correctly(mock_id_repository_root):
     repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.WRITER,
         base_path=mock_id_repository_root,
-        max_reader_count=1,
     )
     an_id: str = "abc"
     assert Path(mock_id_repository_root, "a/b/c") == repository._path_calculator(
@@ -71,7 +87,6 @@ def test_repository_creates_ids(mock_id_repository_root):
     repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.WRITER,
         base_path=mock_id_repository_root,
-        max_reader_count=1,
     )
     an_id = repository.create_id()
     print(an_id)
@@ -84,7 +99,6 @@ def test_repository_checks_identifier_existence_correctly(mock_id_repository_roo
     repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.WRITER,
         base_path=mock_id_repository_root,
-        max_reader_count=1,
     )
     an_id = repository.create_id()
     assert repository.exists(identifier=an_id)
