@@ -1,4 +1,4 @@
-from api.services.IdCreator import IdCreator
+from co.deability.identifier.api.services.IdCreator import IdCreator
 
 
 def test_get_new_id(mock_id_repository_writer):

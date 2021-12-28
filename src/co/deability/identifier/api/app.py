@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from api import init_app
-
+from co.deability.identifier.api import init_app
 
 app: Flask = init_app()
 cors = CORS(app)

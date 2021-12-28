@@ -1,8 +1,5 @@
-from os import PathLike
-
-import config
-from api.repositories.IdRepository import IdRepository
-from api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier.api import config
+from co.deability.identifier.api.repositories.IdRepository import IdRepository
 
 
 class IdCreator:

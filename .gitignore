@@ -4,3 +4,5 @@
 __pycache__/
 tags
 *.iml
+*.egg-info/
+dist/

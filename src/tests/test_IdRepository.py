@@ -2,14 +2,19 @@ from pathlib import Path
 
 import pytest
 import re
+import os
 
-import config
-from errors.BadRepositoryError import BadRepositoryError
-from errors.IllegalArgumentError import IllegalArgumentError
-from errors.IllegalIdentifierError import IllegalIdentifierError
-from api.repositories.IdRepository import IdRepository, _is_valid, _generate_id
-from api.repositories.IdRepositoryType import IdRepositoryType
-from errors.TooManyRetriesError import TooManyRetriesError
+from co.deability.identifier.api import config
+from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
+from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
+from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentifierError
+from co.deability.identifier.api.repositories.IdRepository import (
+    IdRepository,
+    _is_valid,
+    _generate_id,
+)
+from co.deability.identifier.api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
 
 
 def test_id_repository_construction(mock_id_repository_root):
@@ -35,8 +40,7 @@ def test_id_repository_construction(mock_id_repository_root):
         base_path=mock_id_repository_root,
     )
     assert IdRepository._readers[0] == repository
-
-    config.MAX_READER_COUNT = 1
+    os.environ["ID_MAX_READER_COUNT"] = "1"
     another_repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.READER,
         base_path=mock_id_repository_root,
@@ -105,9 +109,18 @@ def test_create_id_with_bad_retries_raises_error(mock_id_repository_root):
         repository.create_id(retries=None)
     with pytest.raises(IllegalArgumentError):
         repository.create_id(retries=-1)
-    repository._serialize = None
+
+
+def test_create_id_with_failed_retries_raises_correct_error(mock_id_repository_root):
+    repository: IdRepository = IdRepository(
+        repository_type=IdRepositoryType.WRITER,
+        base_path=mock_id_repository_root,
+    )
+    holder = repository._serialize
+    repository._serialize = lambda identifier: False
     with pytest.raises(TooManyRetriesError):
-        repository.create_id(retries=1)
+        repository.create_id(retries=0)
+    repository._serialize = holder
 
 
 def test_repository_checks_identifier_existence_correctly(mock_id_repository_root):

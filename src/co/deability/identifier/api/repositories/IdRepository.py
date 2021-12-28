@@ -1,5 +1,4 @@
 import logging
-import os
 import uuid
 import getpass
 import time
@@ -7,14 +6,16 @@ from os import path, PathLike
 from pathlib import Path
 from typing import Final
 
-import config
-from errors.BadProcessError import BadProcessError
-from errors.BadRepositoryError import BadRepositoryError
-from errors.IllegalArgumentError import IllegalArgumentError
-from errors.IllegalIdentifierError import IllegalIdentifierError
-from errors.UnsupportedOperationError import UnsupportedOperationError
-from api.repositories.IdRepositoryType import IdRepositoryType
-from errors.TooManyRetriesError import TooManyRetriesError
+from co.deability.identifier.api import config
+from co.deability.identifier.errors.BadProcessError import BadProcessError
+from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
+from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
+from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentifierError
+from co.deability.identifier.errors.UnsupportedOperationError import (
+    UnsupportedOperationError,
+)
+from co.deability.identifier.api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
 
 VALID_CHARS: Final[str] = "0123456789abcdef"
 
@@ -162,23 +163,24 @@ class IdRepository:
         assert _is_valid(identifier=identifier)
 
         file_path: Path = self._path_calculator(identifier=identifier)
-        if not file_path.exists():
-            try:
-                file_path.mkdir(mode=500, parents=True, exist_ok=False)
-                return True
-            except FileExistsError:
-                logging.warning(msg=f"Identifier {identifier} already exists.")
-            except Exception as ex:
-                self._serialization_failures += 1
-                message = (
-                    f"Unable to serialize identifier {identifier}. Total serialization "
-                    f"failures: {self._serialization_failures}"
-                )
-                logging.error(
-                    msg=message,
-                    exc_info=ex,
-                    stack_info=True,
-                )
+        if file_path.exists():
+            return False
+        try:
+            file_path.mkdir(parents=True, exist_ok=False)
+            return True
+        except FileExistsError:
+            logging.warning(msg=f"Identifier {identifier} already exists.")
+        except Exception as ex:
+            self._serialization_failures += 1
+            message = (
+                f"Unable to serialize identifier {identifier}. Total serialization "
+                f"failures: {self._serialization_failures}"
+            )
+            logging.error(
+                msg=message,
+                exc_info=ex,
+                stack_info=True,
+            )
         return False
 
     def __new__(cls, *args, **kwargs) -> "IdRepository":
@@ -193,7 +195,7 @@ class IdRepository:
         else:
             if cls._readers is None:
                 cls._readers = []
-            elif len(cls._readers) > config.MAX_READER_COUNT:
+            elif len(cls._readers) == config.MAX_READER_COUNT:
                 cls._reader_index = (
                     0
                     if cls._reader_index == config.MAX_READER_COUNT - 1

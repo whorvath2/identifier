@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from errors.IdentifierError import IdentifierError
+from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 
 class BadRepositoryError(IdentifierError):
