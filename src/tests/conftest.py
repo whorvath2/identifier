@@ -22,7 +22,7 @@ ACCEPT_JSON_HEADERS: Final[dict[str]] = {"Accept": "application/json"}
 
 
 @pytest.fixture
-def http_client():
+def http_client(mock_id_repository_writer):
     """
     Mock HTTP client for use in testing routes.
     """
