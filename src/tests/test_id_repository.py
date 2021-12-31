@@ -8,12 +8,12 @@ from co.deability.identifier.api import config
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
 from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentifierError
-from co.deability.identifier.api.repositories.IdRepository import (
+from co.deability.identifier.api.repositories.id_repository import (
     IdRepository,
     _is_valid,
     _generate_id,
 )
-from co.deability.identifier.api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
 
 

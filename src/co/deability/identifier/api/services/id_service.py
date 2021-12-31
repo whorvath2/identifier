@@ -1,5 +1,5 @@
 from co.deability.identifier.api import config
-from co.deability.identifier.api.repositories.IdRepository import IdRepository
+from co.deability.identifier.api.repositories.id_repository import IdRepository
 
 
 class IdCreator:

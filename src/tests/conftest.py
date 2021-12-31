@@ -1,15 +1,37 @@
+import logging
 import os
 from pathlib import Path
 import shutil
 import sys
+from typing import Final
+
 import pytest
 
 # add the parent directory to the path
 myPath = os.path.dirname(os.path.abspath(__file__))  # noqa: E402
 sys.path.insert(0, myPath + "/../")  # noqa: E402
 
-from co.deability.identifier.api.repositories.IdRepository import IdRepository
-from co.deability.identifier.api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier import api
+from co.deability.identifier.api.repositories.id_repository import IdRepository
+from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
+
+# turn on debug-level logging for tests
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+
+ACCEPT_JSON_HEADERS: Final[dict[str]] = {"Accept": "application/json"}
+
+
+@pytest.fixture
+def http_client():
+    """
+    Mock HTTP client for use in testing routes.
+    """
+    app = api.init_app()
+    app.debug = True
+    with app.app_context():
+        app.config["TESTING"] = True
+        client = app.test_client()
+        yield client
 
 
 @pytest.fixture()

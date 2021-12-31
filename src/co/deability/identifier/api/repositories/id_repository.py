@@ -14,7 +14,7 @@ from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentif
 from co.deability.identifier.errors.UnsupportedOperationError import (
     UnsupportedOperationError,
 )
-from co.deability.identifier.api.repositories.IdRepositoryType import IdRepositoryType
+from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
 
 VALID_CHARS: Final[str] = "0123456789abcdef"
