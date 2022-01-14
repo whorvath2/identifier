@@ -13,19 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from http import HTTPStatus
+import os
+from pathlib import Path
+from typing import Final
 
-from co.deability.identifier.errors.IdentifierError import IdentifierError
+MAX_READER_COUNT: Final[int] = int(os.environ.get("ID_MAX_READER_COUNT", 1))
 
+_default_base_path: Path = Path(Path.cwd(), "dev_db")
+_base_path: str = os.environ.get("ID_BASE_PATH")
+BASE_PATH: Final[Path] = Path(_base_path) if _base_path else _default_base_path
+if __debug__:
+    BASE_PATH.mkdir(mode=510, exist_ok=True, parents=True)
 
-class TooManyRetriesError(IdentifierError):
-    """
-    Thrown when one or more attempts have been made to create a serialized identifier and all
-    have failed.
-    """
-
-    def __init__(self, retries: int):
-        super().__init__(
-            message=f"An identifier could not be created after {retries} attempts.",
-            error_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
+# Configurable because we may be using NFS
+MAX_RETRIES: int = int(os.environ.get("ID_MAX_RETRIES", 0))
