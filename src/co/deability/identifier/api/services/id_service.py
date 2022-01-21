@@ -18,6 +18,7 @@ from co.deability.identifier.api.repositories.id_repository import (
     IdRepository,
     IdRepositoryType,
 )
+from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 
 
 class IdCreator:
@@ -27,6 +28,10 @@ class IdCreator:
             repository_type=IdRepositoryType.WRITER
         ),
     ):
+        if not id_repository.get_type() == IdRepositoryType.WRITER:
+            raise IllegalArgumentError(
+                message="The supplied repository is not a supported type."
+            )
         self.id_repository = id_repository
 
     def get_new_id(self) -> dict:

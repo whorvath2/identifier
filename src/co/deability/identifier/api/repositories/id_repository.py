@@ -221,3 +221,10 @@ class IdRepository:
             new_reader = super(IdRepository, cls).__new__(cls)
             cls._readers.append(new_reader)
             return new_reader
+
+    def get_type(self):
+        """
+        Returns the type of this repository instance. (See IdRepositoryType)
+        :return: the type of this repository instance.
+        """
+        return self.type

@@ -15,6 +15,7 @@ limitations under the License.
 """
 from http import HTTPStatus
 
+from co.deability.identifier import config
 from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 
@@ -26,6 +27,6 @@ class BadRepositoryError(IdentifierError):
 
     def __init__(self):
         super().__init__(
-            message="The repository is not available because minimum requirements are unmet.",
+            message=f"The repository at {config.BASE_PATH.absolute()} is not available.",
             error_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         )

@@ -3,25 +3,30 @@ A python project to provide identifiers as a service.
 
 ## Setup
 
-From the command line:
-
     python3 -m venv .venv
     source .venv/bin/activate
     pip install setuptools
     pip install build
     pip install pytest
-    pip install -e .
     python -m build
+
+## Installation
+    
+    pip install dist/co.deability.identifier-[version]-py3-none-any.whl
 
 
 ## Running the API
-
-From the command line:
 
     cd src
     python -m co.deability.identifier.api.app
 
 [Open your browser](http://localhost:5000/identifier) to verify that it's running. 
+
+## Development
+
+### Testing
+
+    pytest src/tests
 
 ___
 _Copyright © 2021 William L Horvath II_

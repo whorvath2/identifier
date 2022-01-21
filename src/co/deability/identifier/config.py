@@ -17,13 +17,21 @@ import os
 from pathlib import Path
 from typing import Final
 
-MAX_READER_COUNT: Final[int] = int(os.environ.get("ID_MAX_READER_COUNT", 1))
-
-_default_base_path: Path = Path(Path.cwd(), "dev_db")
 _base_path: str = os.environ.get("ID_BASE_PATH")
-BASE_PATH: Final[Path] = Path(_base_path) if _base_path else _default_base_path
-if __debug__:
-    BASE_PATH.mkdir(mode=510, exist_ok=True, parents=True)
+if not __debug__ and not _base_path:
+    raise FileNotFoundError(
+        "The ID_BASE_PATH environment variable is not set, or points to a non-existent "
+        "directory. This variable must exist and indicate a path to an existing directory prior "
+        "to identifier being run in a production environment."
+    )
+elif __debug__ and not _base_path:
+    _base_path = "./dev_db"
 
+BASE_PATH: Final[Path] = Path(Path(), _base_path).absolute()
+print(f"Creating {BASE_PATH} ...")
+BASE_PATH.mkdir(mode=510, exist_ok=True, parents=True)
+print("...Done")
+
+MAX_READER_COUNT: Final[int] = int(os.environ.get("ID_MAX_READER_COUNT", 1))
 # Configurable because we may be using NFS
 MAX_RETRIES: int = int(os.environ.get("ID_MAX_RETRIES", 0))

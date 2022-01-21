@@ -18,12 +18,12 @@ from typing import Final
 from co.deability.identifier.api.app import app
 from co.deability.identifier.api.repositories.id_repository import IdRepository
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
-from conftest import ACCEPT_JSON_HEADERS
+from conftest import ACCEPT_JSON_HEADERS, TEMP_PATH
 
 ROOT_DIR: Final[str] = "/identifier"
 
 
-def test_health_check(mock_id_repository_root):
+def test_health_check():
 
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}"
@@ -31,11 +31,7 @@ def test_health_check(mock_id_repository_root):
         assert "OK" in str(response.json)
 
 
-def test_create_id(mock_id_repository_root):
-    IdRepository(
-        repository_type=IdRepositoryType.WRITER,
-        base_path=mock_id_repository_root,
-    )
+def test_create_id():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)

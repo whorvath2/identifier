@@ -15,16 +15,18 @@ limitations under the License.
 """
 import logging
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 import sys
 from typing import Final
 
 import pytest
 
-# add the parent directory to the path
-myPath = os.path.dirname(os.path.abspath(__file__))  # noqa: E402
-sys.path.insert(0, myPath + "/../")  # noqa: E402
+from _pytest.main import Session
+
+# add the parent directory to the path per noqa: E402
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, myPath + "/../")
 
 from co.deability.identifier import api, config
 from co.deability.identifier.api.repositories.id_repository import IdRepository
@@ -34,10 +36,24 @@ from co.deability.identifier.api.repositories.id_repository_type import IdReposi
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
 ACCEPT_JSON_HEADERS: Final[dict[str]] = {"Accept": "application/json"}
+TEMP_PATH: Final[Path] = Path(config.BASE_PATH, "temp").absolute()
+print(f"TEMP_PATH = {TEMP_PATH}")
+
+
+@pytest.hookimpl()
+def pytest_sessionstart(session: Session):
+    print(f"Constructing temporary path {TEMP_PATH}...")
+    TEMP_PATH.mkdir(parents=True, exist_ok=True)
+
+
+@pytest.hookimpl()
+def pytest_sessionfinish(session: Session):
+    print(f"...Destroying temporary path {TEMP_PATH}")
+    shutil.rmtree(TEMP_PATH, ignore_errors=True)
 
 
 @pytest.fixture
-def http_client(mock_id_repository_root):
+def http_client():
     """
     Mock HTTP client for use in testing routes.
     """
@@ -50,23 +66,10 @@ def http_client(mock_id_repository_root):
 
 
 @pytest.fixture
-def mock_id_repository_root(request):
-    print("Setup")
-    temp_path = Path(config.BASE_PATH, "temp")
-    temp_path.mkdir(parents=True, exist_ok=True)
-    yield Path(temp_path)
-
-    def teardown():
-        print("Teardown")
-        shutil.rmtree(path=temp_path, ignore_errors=False)
-
-    request.addfinalizer(teardown)
-
-    return "resource"
+def mock_id_repository_writer():
+    return IdRepository(repository_type=IdRepositoryType.WRITER, base_path=TEMP_PATH)
 
 
 @pytest.fixture
-def mock_id_repository_writer(mock_id_repository_root):
-    return IdRepository(
-        repository_type=IdRepositoryType.WRITER, base_path=mock_id_repository_root
-    )
+def mock_id_repository_reader():
+    return IdRepository(repository_type=IdRepositoryType.READER, base_path=TEMP_PATH)

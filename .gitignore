@@ -20,3 +20,4 @@ tags
 *.iml
 *.egg-info/
 dist/
+out/
