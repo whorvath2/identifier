@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3-slim-buster
+FROM python:3.9
 
 ARG environment_type
 ARG build_id
@@ -20,10 +20,17 @@ ARG build_id
 ENV FLASK_ENV=$environment_type
 ENV BUILD_ID=$build_id
 
-RUN apt-get update \
-    && apt-get install -y nginx openssl supervisor \
-    && mkdir /service/identifier \
-    && openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+RUN apt-get update
+RUN apt-get install -y nginx openssl supervisor sudo
+
+RUN groupadd -g 1001 api-service \
+    && useradd -d /service/identifier -s /bin/bash -u 1001 -g 1001 api-service \
+    && usermod -a -G sudo api-service \
+    && usermod -g sudo api-service \
+    && mkdir -p /service/identifier \
+    && chown -R api-service:api-service /service/identifier
+
+RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
     -keyout /etc/ssl/private/codeability-selfsigned.key \
     -out /etc/ssl/certs/codeability-selfsigned.crt \
     -subj "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.deability.co"
@@ -36,13 +43,14 @@ COPY supervisord.conf /etc/supervisord.conf
 ENV VIRTUAL_ENV=.venv
 
 RUN python -m venv $VIRTUAL_ENV \
+    && $VIRTUAL_ENV/bin/python -m pip install --upgrade pip \
     && $VIRTUAL_ENV/bin/pip install setuptools \
     && $VIRTUAL_ENV/bin/pip install build \
-    && $VIRTUAL_ENV/bin/python -m build
+    && $VIRTUAL_ENV/bin/python -m build --wheel -o ./ \
+    && $VIRTUAL_ENV/bin/pip install ./*.whl
 
 ENV PATH=$PATH:$VIRTUAL_ENV/bin
 
-RUN chown -R api-service:api-service /var/lib/nginx
 
 EXPOSE 443
-ENTRYPOINT ["/usr/bin/supervisord"]
+ENTRYPOINT ["/usr/bin/supervisord", "-c", "/service/identifier/supervisord.conf"]

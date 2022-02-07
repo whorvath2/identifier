@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    environment:
+      ID_BASE_PATH: "./dev-db"
+      BUILD_ID: "local"
+      FLASK_ENV: "development"
+    ports:
+      - "4430:443"
+    container_name: identifier_api
