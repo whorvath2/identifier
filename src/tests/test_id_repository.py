@@ -30,7 +30,7 @@ from co.deability.identifier.api.repositories.id_repository import (
 )
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
-from conftest import TEMP_PATH
+from conftest import test_path
 
 
 def test_id_repository_construction():
@@ -45,7 +45,7 @@ def test_id_repository_construction():
     IdRepository._writer = None
     repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.WRITER,
-        base_path=TEMP_PATH,
+        base_path=test_path,
     )
     assert repository._writer == repository
     assert len(repository._readers) <= config.MAX_READER_COUNT
@@ -53,13 +53,13 @@ def test_id_repository_construction():
     IdRepository._readers = []
     repository = IdRepository(
         repository_type=IdRepositoryType.READER,
-        base_path=TEMP_PATH,
+        base_path=test_path,
     )
     assert IdRepository._readers[0] == repository
     os.environ["ID_MAX_READER_COUNT"] = "1"
     another_repository: IdRepository = IdRepository(
         repository_type=IdRepositoryType.READER,
-        base_path=TEMP_PATH,
+        base_path=test_path,
     )
     assert IdRepository._readers[0] == repository
 
@@ -91,7 +91,7 @@ def test_repository_create_id_fails_with_illegal_retries_values(
 
 def test_repository_calculates_paths_correctly(mock_id_repository_writer):
     an_id: str = "abc"
-    assert Path(TEMP_PATH, "a/b/c") == mock_id_repository_writer._path_calculator(
+    assert Path(test_path, "a/b/c") == mock_id_repository_writer._path_calculator(
         identifier=an_id
     )
 

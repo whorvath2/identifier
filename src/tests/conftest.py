@@ -22,11 +22,13 @@ from typing import Final
 
 import pytest
 
-from _pytest.main import Session
-
 # add the parent directory to the path per noqa: E402
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + "/../")
+os.environ["APP_LOG_LEVEL"] = "DEBUG"
+os.environ["ROOT_LOG_LEVEL"] = "INFO"
+test_path: Path = Path(Path.home(), ".identifier/test").absolute()
+os.environ["IDENTIFIER_DATA_PATH"] = str(test_path)
 
 from co.deability.identifier import api, config
 from co.deability.identifier.api.repositories.id_repository import IdRepository
@@ -36,20 +38,16 @@ from co.deability.identifier.api.repositories.id_repository_type import IdReposi
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
 ACCEPT_JSON_HEADERS: Final[dict[str]] = {"Accept": "application/json"}
-TEMP_PATH: Final[Path] = Path(config.BASE_PATH, "temp").absolute()
-print(f"TEMP_PATH = {TEMP_PATH}")
 
 
-@pytest.hookimpl()
-def pytest_sessionstart(session: Session):
-    print(f"Constructing temporary path {TEMP_PATH}...")
-    TEMP_PATH.mkdir(parents=True, exist_ok=True)
+def pytest_runtest_setup(item):
+    print(f"Constructing temporary path {test_path}...")
+    test_path.mkdir(parents=True, exist_ok=True)
 
 
-@pytest.hookimpl()
-def pytest_sessionfinish(session: Session):
-    print(f"...Destroying temporary path {TEMP_PATH}")
-    shutil.rmtree(TEMP_PATH, ignore_errors=True)
+def pytest_runtest_teardown(item):
+    print(f"...Destroying temporary path {test_path}")
+    shutil.rmtree(test_path, ignore_errors=True)
 
 
 @pytest.fixture
@@ -67,9 +65,9 @@ def http_client():
 
 @pytest.fixture
 def mock_id_repository_writer():
-    return IdRepository(repository_type=IdRepositoryType.WRITER, base_path=TEMP_PATH)
+    return IdRepository(repository_type=IdRepositoryType.WRITER, base_path=test_path)
 
 
 @pytest.fixture
 def mock_id_repository_reader():
-    return IdRepository(repository_type=IdRepositoryType.READER, base_path=TEMP_PATH)
+    return IdRepository(repository_type=IdRepositoryType.READER, base_path=test_path)

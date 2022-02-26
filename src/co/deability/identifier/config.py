@@ -14,24 +14,48 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import os
+import logging
 from pathlib import Path
 from typing import Final
+from co.deability.identifier.errors.EnvironmentError import EnvironmentError
 
-_base_path: str = os.environ.get("ID_BASE_PATH")
-if not __debug__ and not _base_path:
-    raise FileNotFoundError(
-        "The ID_BASE_PATH environment variable is not set, or points to a non-existent "
-        "directory. This variable must exist and indicate a path to an existing directory prior "
-        "to identifier being run in a production environment."
+# INFO
+BUILD_ID: Final[str] = os.environ.get("BUILD_ID", "N/A")
+
+# LOGGING CONFIG
+ID_LOG: Final[str] = "id_log"
+ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
+APP_LOG_LEVEL: Final[str] = os.environ.get("APP_LOG_LEVEL")
+if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
+    raise EnvironmentError(
+        explanation="Either or both of the environment variables ROOT_LOG_LEVEL and "
+        "APP_LOG_LEVEL are not set."
     )
-elif __debug__ and not _base_path:
-    _base_path = "./dev_db"
+logging.basicConfig(level=ROOT_LOG_LEVEL)
+LOG = logging.getLogger(ID_LOG)
+LOG.setLevel(level=APP_LOG_LEVEL)
 
-BASE_PATH: Final[Path] = Path(Path(), _base_path).absolute()
-print(f"Creating {BASE_PATH} ...")
-BASE_PATH.mkdir(mode=510, exist_ok=True, parents=True)
-print("...Done")
+# DATA CONFIG
+_data_path: str = os.environ.get("IDENTIFIER_DATA_PATH")
+if not _data_path:
+    raise EnvironmentError(
+        explanation="The IDENTIFIER_DATA_PATH environment variable is not set."
+    )
+IDENTIFIER_DATA_PATH: Final[Path] = Path(_data_path).absolute()
+IDENTIFIER_DATA_PATH.mkdir(parents=True, exist_ok=True)
 
-MAX_READER_COUNT: Final[int] = int(os.environ.get("ID_MAX_READER_COUNT", 1))
+MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))
 # Configurable because we may be using NFS
-MAX_RETRIES: int = int(os.environ.get("ID_MAX_RETRIES", 0))
+MAX_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
+LOG.info("Config loaded")
+LOG.debug(
+    str(
+        {
+            "ROOT_LOG_LEVEL": ROOT_LOG_LEVEL,
+            "APP_LOG_LEVEL": APP_LOG_LEVEL,
+            "IDENTIFIER_DATA_PATH": IDENTIFIER_DATA_PATH,
+            "MAX_READER_COUNT": MAX_READER_COUNT,
+            "MAX_RETRIES": MAX_RETRIES,
+        }
+    )
+)

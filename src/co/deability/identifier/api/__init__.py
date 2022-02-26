@@ -44,6 +44,6 @@ def _register_blueprints(app) -> None:
 
 def _initialize_data_store() -> None:
     try:
-        config.BASE_PATH.mkdir(parents=True, exist_ok=True)
-    except FileExistsError:
+        config.IDENTIFIER_DATA_PATH.mkdir(parents=True, exist_ok=True)
+    except Exception:
         raise BadRepositoryError()

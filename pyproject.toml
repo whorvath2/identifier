@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --rootdir=./src/tests"
+addopts = "-ra --capture=tee-sys --log-level=DEBUG --rootdir=./src/tests"
 testpaths = [
     "src/tests",
 ]

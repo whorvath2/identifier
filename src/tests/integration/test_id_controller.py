@@ -16,9 +16,7 @@ limitations under the License.
 from typing import Final
 
 from co.deability.identifier.api.app import app
-from co.deability.identifier.api.repositories.id_repository import IdRepository
-from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
-from conftest import ACCEPT_JSON_HEADERS, TEMP_PATH
+from conftest import ACCEPT_JSON_HEADERS
 
 ROOT_DIR: Final[str] = "/identifier"
 

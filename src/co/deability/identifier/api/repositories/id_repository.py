@@ -17,6 +17,7 @@ import logging
 import uuid
 import getpass
 import time
+from functools import cache
 from os import path, PathLike
 from pathlib import Path
 from typing import Final
@@ -85,8 +86,9 @@ class IdRepository:
     def __init__(
         self,
         repository_type: IdRepositoryType,
-        base_path: (str, PathLike) = config.BASE_PATH,
+        base_path: (str, PathLike) = config.IDENTIFIER_DATA_PATH,
     ) -> None:
+
         if not isinstance(repository_type, IdRepositoryType):
             raise IllegalArgumentError("type must be an IdRepositoryType.")
         if not base_path or not isinstance(base_path, (str, PathLike)):
@@ -97,9 +99,12 @@ class IdRepository:
         self.base_path: Path = Path(base_path)
         if not self.base_path.exists() or not self.base_path.is_dir():
             raise BadRepositoryError()
-        if not self.base_path.owner() == getpass.getuser():
-            raise BadProcessError()
+        owner: str = str(self.base_path.owner())
+        user: str = str(getpass.getuser())
+        if not owner == user and not owner == "root":
+            raise BadProcessError(data_owner=owner, pid_user=user)
 
+    @cache
     def _path_calculator(self, identifier: str) -> Path:
         """
         Returns a file path for a directory derived from this instance's base_path and the
@@ -143,6 +148,7 @@ class IdRepository:
             time.sleep(0.01)  # Give the CPU a break
         raise TooManyRetriesError(retries=retries)
 
+    @cache
     def exists(self, identifier: str) -> bool:
         """
         Returns True if the supplied identifier already exists in this IdRepository instance;
@@ -212,7 +218,7 @@ class IdRepository:
             elif len(cls._readers) == config.MAX_READER_COUNT:
                 cls._reader_index = (
                     0
-                    if cls._reader_index == config.MAX_READER_COUNT - 1
+                    if cls._reader_index >= config.MAX_READER_COUNT - 1
                     else (cls._reader_index + 1)
                 )
                 reader = cls._readers[cls._reader_index]
