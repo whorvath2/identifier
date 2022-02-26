@@ -54,3 +54,8 @@ def health_check():
 @id_blueprint.get("/new")
 def get_new_id():
     return make_response(jsonify(id_creator.get_new_id()), 200)
+
+
+@id_blueprint.get("/exists/<check_id>")
+def check_id_exists(check_id: str):
+    return make_response(jsonify(id_creator.exists(check_id=check_id)))

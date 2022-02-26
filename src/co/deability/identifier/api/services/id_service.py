@@ -35,5 +35,7 @@ class IdCreator:
         self.id_repository = id_repository
 
     def get_new_id(self) -> dict:
-        new_id: str = self.id_repository.create_id(retries=config.MAX_RETRIES)
-        return {"created": new_id}
+        return {"created": self.id_repository.create_id(retries=config.MAX_RETRIES)}
+
+    def exists(self, check_id: str):
+        return {"exists": self.id_repository.exists(identifier=check_id)}
