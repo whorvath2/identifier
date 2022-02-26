@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import json
 from typing import Final
 
 from co.deability.identifier.api.app import app
@@ -34,3 +35,14 @@ def test_create_id():
         endpoint = f"{ROOT_DIR}/new"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
         assert "created" in str(response.json)
+        assert len(response.json.get("created")) == 32
+
+
+def test_check_id_exists():
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/new"
+        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
+        random_id = id_content.get("created")
+        endpoint = f"{ROOT_DIR}/exists/{random_id}"
+        response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
+        assert response.json.get("exists") is True
