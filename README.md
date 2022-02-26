@@ -75,9 +75,13 @@ This will install the identifier api in the python virtual environment:
 The output should look like this:
 
     {
+        "build_id": "local"
         "status": "OK",
         "timestamp": "Fri, 11 Feb 2022 17:10:13 +0000"
+        ...
     }
+
+Note: additional information is included in pre-production environments
 
 ## Development
 

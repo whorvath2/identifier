@@ -21,3 +21,4 @@ buildspec.yml
 deployspec.yml
 testspec.yml
 README*
+src/tests/*

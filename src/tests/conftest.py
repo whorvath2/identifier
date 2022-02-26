@@ -27,10 +27,10 @@ myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + "/../")
 os.environ["APP_LOG_LEVEL"] = "DEBUG"
 os.environ["ROOT_LOG_LEVEL"] = "INFO"
-test_path: Path = Path(Path.home(), ".identifier/test").absolute()
+test_path: Path = Path(Path.home().absolute(), ".identifier/test")
 os.environ["IDENTIFIER_DATA_PATH"] = str(test_path)
 
-from co.deability.identifier import api, config
+from co.deability.identifier import api
 from co.deability.identifier.api.repositories.id_repository import IdRepository
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 
