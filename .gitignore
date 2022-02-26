@@ -21,3 +21,6 @@ tags
 *.egg-info/
 dist/
 out/
+identifier_api.egg-info/
+.env
+Dockerfile.dev
