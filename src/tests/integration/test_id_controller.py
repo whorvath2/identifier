@@ -45,3 +45,27 @@ def test_check_id_exists():
         endpoint = f"{ROOT_DIR}/exists/{random_id}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
         assert response.json.get(f"{random_id} exists") is True
+
+
+def test_add_data():
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/new"
+        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
+        random_id = id_content.get("created")
+        endpoint = f"{ROOT_DIR}/data/add/{random_id}"
+        body = {"foo": "bar"}
+        response = client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
+        assert response.json.get("foo") == "bar"
+
+
+def test_get_data():
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/new"
+        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
+        random_id = id_content.get("created")
+        endpoint = f"{ROOT_DIR}/data/add/{random_id}"
+        body = {"foo": "bar"}
+        client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
+        endpoint = f"{ROOT_DIR}/data/current/{random_id}"
+        response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
+        assert response.json.get(f"{random_id}") == body

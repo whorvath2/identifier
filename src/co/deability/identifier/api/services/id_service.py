@@ -20,6 +20,7 @@ from co.deability.identifier.api.repositories.id_repository import (
     IdRepository,
     IdRepositoryType,
 )
+from co.deability.identifier.errors.BadRequestError import BadRequestError
 from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 
 
@@ -42,6 +43,10 @@ class IdCreator:
         }
 
     def add_data(self, data: dict[str, Any], identifier: str) -> dict[str, Any]:
+        if not data:
+            raise BadRequestError(
+                message="The data is missing from the body of the request."
+            )
         return self.id_repository.add_data(
             data=data, identifier=identifier
         ).get_current_data(identifier=identifier)

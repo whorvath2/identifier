@@ -17,7 +17,7 @@ import time
 from http import HTTPStatus
 from typing import Final
 
-from flask import Blueprint, jsonify, make_response
+from flask import Blueprint, jsonify, make_response, request
 
 from co.deability.identifier.api.services import id_service
 from co.deability.identifier.api.services.id_service import IdCreator
@@ -62,6 +62,14 @@ def get_new_id():
 def check_id_exists(identifier: str):
     return make_response(
         jsonify(id_service.exists(identifier=identifier)), HTTPStatus.OK
+    )
+
+
+@id_blueprint.post("/data/add/<identifier>")
+def add_data(identifier: str):
+    return make_response(
+        jsonify(id_creator.add_data(data=request.json, identifier=identifier)),
+        HTTPStatus.OK,
     )
 
 
