@@ -26,6 +26,7 @@ class BadProcessError(IdentifierError):
 
     def __init__(self, data_owner: str, pid_user: str):
         super().__init__(
-            message=f"The IdRepository's process is running under an invalid account. Owner: {data_owner} User: {pid_user} ",
+            message=f"The IdRepository's process is running under an invalid account. "
+            f"Owner: {data_owner} User: {pid_user} ",
             error_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         )

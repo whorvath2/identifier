@@ -13,27 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import logging
-import uuid
 import getpass
+import json
+import logging
+import random
 import time
+import uuid
 from functools import cache
 from os import path, PathLike
 from pathlib import Path
-from typing import Final
+from typing import Final, Any
 
 from co.deability.identifier import config
+from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 from co.deability.identifier.errors.BadProcessError import BadProcessError
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
 from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentifierError
+from co.deability.identifier.errors.NoSuchEntityError import NoSuchEntityError
+from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
 from co.deability.identifier.errors.UnsupportedOperationError import (
     UnsupportedOperationError,
 )
-from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
-from co.deability.identifier.errors.TooManyRetriesError import TooManyRetriesError
+from co.deability.identifier.services import time_service
 
 VALID_CHARS: Final[str] = "0123456789abcdef"
+# The filename for data related to an identifier
+DATA_FILE: Final[str] = "_data.json"
+TIME_LENGTH: Final[int] = 12
+
+# TODO Allow specification of schema for data files
 
 
 def _is_valid(identifier: str) -> bool:
@@ -180,8 +189,6 @@ class IdRepository:
         serialized to disk; False otherwise.
         """
 
-        assert _is_valid(identifier=identifier)
-
         file_path: Path = self._path_calculator(identifier=identifier)
         if file_path.exists():
             return False
@@ -228,9 +235,95 @@ class IdRepository:
             cls._readers.append(new_reader)
             return new_reader
 
-    def get_type(self):
+    def get_type(self) -> IdRepositoryType:
         """
         Returns the type of this repository instance. (See IdRepositoryType)
         :return: the type of this repository instance.
         """
         return self.type
+
+    # TODO enable a configurable write strategy that allows specifying new data as an
+    # rsync-style, only-what's-changed update, rather than requiring repetition of data across files.
+    def add_data(self, data: dict, identifier: str) -> "IdRepository":
+        """
+        Records the supplied data, which represents the entity identified by the supplied
+        identifier.
+
+        Data is never destroyed; it is recorded in a ledger-like fashion. The data
+        of record for any particular identifier is always the most recently written.
+
+        :param data: The data to be recorded as the information of record regarding the entity
+        represented by the supplied identifier.
+        :param identifier: The identifier (unique within the context of this IdRepository
+        instance, and which already exists therein) of the entity represented by the supplied data.
+        """
+        if self.type != IdRepositoryType.WRITER:
+            raise UnsupportedOperationError()
+        self._check_identifier(identifier=identifier)
+        data_path: Path = self._create_data_path(identifier=identifier)
+        retries: int = 0
+        while data_path.exists() and retries <= config.MAX_WRITE_RETRIES:
+            time.sleep(0.001 * random.randint(1, 9))
+            data_path = self._create_data_path(identifier=identifier)
+            retries += 1
+            if retries == config.MAX_WRITE_RETRIES:
+                raise TooManyRetriesError(retries=retries)
+        data_path.write_text(data=json.dumps(data), encoding=config.ENCODING)
+        return self
+
+    def get_current_data(self, identifier: str) -> Any:
+        """
+        Returns the most recent data stored under the supplied identifier, or None if the
+        identifier is recognized and no data regarding that identifier is available. If
+        the identifier is not recognized, an error will be raised.
+
+        :param identifier: The identifier (unique within the context of this IdRepository
+        instance, and which already exists therein) of the entity represented by the returned data.
+        :return: the most recent data stored under the supplied identifier.
+        """
+        data_files: list[Path] = self.get_all_data(identifier=identifier)
+        if not data_files:
+            return None
+        data_files.sort(reverse=True)
+        return json.loads(data_files[0].read_text(encoding=config.ENCODING))
+
+    def get_all_data(self, identifier: str) -> list[Any]:
+        """
+        Returns all available data stored under the supplied identifier.
+
+        :param identifier: The identifier (unique within the context of this IdRepository
+        instance, and which already exists therein) of the entity represented by the returned data.
+        :return: A list containing all available data associated with the supplied identifier,
+        with the most recent data at the top of the list.
+        """
+        self._check_identifier(identifier=identifier)
+        id_folder: Path = self._path_calculator(identifier=identifier)
+        data_files: list[Path] = list(id_folder.glob(f"*{DATA_FILE}"))
+        return data_files
+
+    def _check_identifier(self, identifier: str) -> None:
+        """
+        Raises an error if the supplied identifier is not valid or not recognized by this
+        IdRepository instance; otherwise has no effect.
+
+        :param identifier: The identifier to be evaluated as to whether appears in the data
+        store backing this IdRepository instance.
+        """
+        if not self.exists(identifier):
+            raise NoSuchEntityError(
+                message=f"The supplied identifier {identifier} is not recognized."
+            )
+
+    def _create_data_path(self, identifier) -> Path:
+        """
+        Returns a path to which data about the entity represented by the supplied identifier
+        may be written. The returned path has not been created, nor checked for existence; it
+        falls to the user of this method to create the file.
+
+        :param identifier: The identifier for the entity whose data may be written to a file at
+        the returned path.
+        :return: A possible path to a file in which data regarding the entity may be written.
+        """
+        id_folder: Path = self._path_calculator(identifier=identifier)
+        timestamp: str = f"{time_service.now_epoch_micro()}".zfill(TIME_LENGTH)
+        return Path(id_folder, f"{timestamp}{DATA_FILE}")

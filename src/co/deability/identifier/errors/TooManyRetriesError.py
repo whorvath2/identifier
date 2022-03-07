@@ -20,8 +20,8 @@ from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 class TooManyRetriesError(IdentifierError):
     """
-    Thrown when one or more attempts have been made to create a serialized identifier and all
-    have failed.
+    Thrown when one or more attempts have been made to write data (e.g., creating an identifier,
+    recording metadata, etc.) and all have failed.
     """
 
     def __init__(self, retries: int):

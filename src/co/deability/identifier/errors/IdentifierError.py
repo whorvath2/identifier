@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+from logging import Logger
+from typing import Final
+
+LOG: Final[Logger] = logging.getLogger()
 
 
 class IdentifierError(BaseException):
@@ -25,6 +29,8 @@ class IdentifierError(BaseException):
         super().__init__(message)
         self.message = message
         self.error_code = error_code
-        logging.error(msg=message, exc_info=self, stack_info=__debug__)
-        if __debug__:
-            print("ERROR: " + message)
+        LOG.error(
+            msg=f"{message} (Error code: {error_code})",
+            exc_info=self,
+            stack_info=__debug__,
+        )

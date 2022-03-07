@@ -24,4 +24,5 @@ out/
 identifier_api.egg-info/
 .env
 Dockerfile.dev
+docker-compose.dev.yml
 build/

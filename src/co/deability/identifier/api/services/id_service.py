@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from typing import Any
+
 from co.deability.identifier import config
 from co.deability.identifier.api.repositories.id_repository import (
     IdRepository,
@@ -35,7 +37,23 @@ class IdCreator:
         self.id_repository = id_repository
 
     def get_new_id(self) -> dict:
-        return {"created": self.id_repository.create_id(retries=config.MAX_RETRIES)}
+        return {
+            "created": self.id_repository.create_id(retries=config.MAX_WRITE_RETRIES)
+        }
 
-    def exists(self, check_id: str):
-        return {"exists": self.id_repository.exists(identifier=check_id)}
+    def add_data(self, data: dict[str, Any], identifier: str) -> dict[str, Any]:
+        return self.id_repository.add_data(
+            data=data, identifier=identifier
+        ).get_current_data(identifier=identifier)
+
+
+def get_current_data(identifier: str) -> dict[str, Any]:
+    return {f"{identifier}": _get_reader().get_current_data(identifier=identifier)}
+
+
+def exists(identifier: str) -> dict:
+    return {f"{identifier} exists": _get_reader().exists(identifier=identifier)}
+
+
+def _get_reader() -> IdRepository:
+    return IdRepository(repository_type=IdRepositoryType.READER)

@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import time
+from http import HTTPStatus
 from typing import Final
 
 from flask import Blueprint, jsonify, make_response
 
+from co.deability.identifier.api.services import id_service
 from co.deability.identifier.api.services.id_service import IdCreator
 from co.deability.identifier import config
 
@@ -42,20 +44,29 @@ def health_check():
                     "APP_LOG_LEVEL": f"{config.APP_LOG_LEVEL}",
                     "IDENTIFIER_DATA_PATH": f"{config.IDENTIFIER_DATA_PATH}",
                     "MAX_READER_COUNT": f"{config.MAX_READER_COUNT}",
-                    "MAX_RETRIES": f"{config.MAX_RETRIES}",
+                    "MAX_WRITE_RETRIES": f"{config.MAX_WRITE_RETRIES}",
                 }
             }
         )
         is None
     )
-    return make_response(jsonify(content), 200)
+    return make_response(jsonify(content), HTTPStatus.OK)
 
 
 @id_blueprint.get("/new")
 def get_new_id():
-    return make_response(jsonify(id_creator.get_new_id()), 200)
+    return make_response(jsonify(id_creator.get_new_id()), HTTPStatus.CREATED)
 
 
-@id_blueprint.get("/exists/<check_id>")
-def check_id_exists(check_id: str):
-    return make_response(jsonify(id_creator.exists(check_id=check_id)))
+@id_blueprint.get("/exists/<identifier>")
+def check_id_exists(identifier: str):
+    return make_response(
+        jsonify(id_service.exists(identifier=identifier)), HTTPStatus.OK
+    )
+
+
+@id_blueprint.get("/data/current/<identifier>")
+def get_current_data(identifier: str):
+    return make_response(
+        jsonify(id_service.get_current_data(identifier=identifier)), HTTPStatus.OK
+    )

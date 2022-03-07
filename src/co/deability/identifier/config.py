@@ -15,6 +15,7 @@ limitations under the License.
 """
 import os
 import logging
+from datetime import timezone
 from pathlib import Path
 from typing import Final
 from co.deability.identifier.errors.EnvironmentError import EnvironmentError
@@ -23,7 +24,7 @@ from co.deability.identifier.errors.EnvironmentError import EnvironmentError
 BUILD_ID: Final[str] = os.environ.get("BUILD_ID", "N/A")
 
 # LOGGING CONFIG
-ID_LOG: Final[str] = "id_log"
+ID_LOG_NAME: Final[str] = "id_log"
 ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
 APP_LOG_LEVEL: Final[str] = os.environ.get("APP_LOG_LEVEL")
 if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
@@ -32,7 +33,7 @@ if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
         "APP_LOG_LEVEL are not set."
     )
 logging.basicConfig(level=ROOT_LOG_LEVEL)
-LOG = logging.getLogger(ID_LOG)
+LOG = logging.getLogger(ID_LOG_NAME)
 LOG.setLevel(level=APP_LOG_LEVEL)
 
 # DATA CONFIG
@@ -44,10 +45,15 @@ if not _data_path:
 IDENTIFIER_DATA_PATH: Final[Path] = Path(_data_path).absolute()
 LOG.info(f"Constructing data path {IDENTIFIER_DATA_PATH}")
 IDENTIFIER_DATA_PATH.mkdir(parents=True, exist_ok=True)
-
 MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))
-# Configurable because we may be using NFS
-MAX_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
+MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
+
+# OTHER CONFIG
+TIMEZONE: timezone = timezone.utc
+# todo make encoding configurable
+ENCODING: str = "utf-8"
+
+# Report out
 LOG.info("Config loaded")
 LOG.debug(
     str(
@@ -56,7 +62,7 @@ LOG.debug(
             "APP_LOG_LEVEL": APP_LOG_LEVEL,
             "IDENTIFIER_DATA_PATH": IDENTIFIER_DATA_PATH,
             "MAX_READER_COUNT": MAX_READER_COUNT,
-            "MAX_RETRIES": MAX_RETRIES,
+            "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
         }
     )
 )
