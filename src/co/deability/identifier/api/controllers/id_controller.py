@@ -78,3 +78,8 @@ def get_current_data(identifier: str):
     return make_response(
         jsonify(id_service.get_current_data(identifier=identifier)), HTTPStatus.OK
     )
+
+
+@id_blueprint.get("/data/all/<identifier>")
+def get_all_data(identifier: str):
+    return make_response(jsonify(id_service.get_all_data(identifier=identifier)), HTTPStatus.OK)

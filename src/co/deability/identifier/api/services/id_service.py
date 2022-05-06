@@ -56,6 +56,9 @@ def get_current_data(identifier: str) -> dict[str, Any]:
     return {f"{identifier}": _get_reader().get_current_data(identifier=identifier)}
 
 
+def get_all_data(identifier: str) -> dict[str, Any]:
+    return {f"{identifier}": _get_reader().get_all_data(identifier=identifier)}
+
 def exists(identifier: str) -> dict:
     return {f"{identifier} exists": _get_reader().exists(identifier=identifier)}
 

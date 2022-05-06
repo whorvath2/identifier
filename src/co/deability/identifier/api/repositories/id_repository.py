@@ -22,7 +22,7 @@ import uuid
 from functools import cache
 from os import path, PathLike
 from pathlib import Path
-from typing import Final, Any
+from typing import Final, Any, Dict, List
 
 from co.deability.identifier import config
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
@@ -281,25 +281,44 @@ class IdRepository:
         instance, and which already exists therein) of the entity represented by the returned data.
         :return: the most recent data stored under the supplied identifier.
         """
-        data_files: list[Path] = self.get_all_data(identifier=identifier)
+        self._check_identifier(identifier=identifier)
+        data_files: list[Path] = self._get_all_data_file_paths(identifier=identifier)
         if not data_files:
             return None
         data_files.sort(reverse=True)
         return json.loads(data_files[0].read_text(encoding=config.ENCODING))
 
-    def get_all_data(self, identifier: str) -> list[Any]:
-        """
-        Returns all available data stored under the supplied identifier.
 
-        :param identifier: The identifier (unique within the context of this IdRepository
-        instance, and which already exists therein) of the entity represented by the returned data.
+    def get_all_data(self, identifier: str) -> Dict[str, Any]:
+        """
+        Returns all available data stored under the supplied identifier as a dictionary. The keys
+        of the returned dictionary are the name of the data file, and the values are the data
+        the file contains.
+
+        :param identifier: The identifier of the entity represented by the returned data.
         :return: A list containing all available data associated with the supplied identifier,
         with the most recent data at the top of the list.
         """
         self._check_identifier(identifier=identifier)
+        data_files: list[Path] = self._get_all_data_file_paths(identifier=identifier)
+        results: Dict[str, Any] = {}
+        for file in data_files:
+            results.update({file.name: json.loads(file.read_text(encoding=config.ENCODING))})
+        return results
+
+
+    def _get_all_data_file_paths(self, identifier: str) -> List[Path]:
+        """
+        Returns a list of paths, each of which points to a data file associated with the supplied
+         identifier. If there are no such files, the list will be empty.
+
+        :param identifier: The identifier of the entity represented by the returned data.
+        :return: A list of data file paths for the supplied identifier.
+        """
         id_folder: Path = self._path_calculator(identifier=identifier)
         data_files: list[Path] = list(id_folder.glob(f"*{DATA_FILE}"))
         return data_files
+
 
     def _check_identifier(self, identifier: str) -> None:
         """

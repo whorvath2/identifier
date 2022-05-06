@@ -58,7 +58,7 @@ def test_add_data():
         assert response.json.get("foo") == "bar"
 
 
-def test_get_data():
+def test_get_current_data():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
         id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
@@ -69,3 +69,20 @@ def test_get_data():
         endpoint = f"{ROOT_DIR}/data/current/{random_id}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
         assert response.json.get(f"{random_id}") == body
+
+
+def test_get_all_data():
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/new"
+        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
+        random_id = id_content.get("created")
+        endpoint = f"{ROOT_DIR}/data/add/{random_id}"
+        body_one = {"foo": "bar"}
+        client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body_one)
+        body_two = {"fizz": "buzz"}
+        client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body_two)
+        endpoint = f"{ROOT_DIR}/data/all/{random_id}"
+        response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
+        output = str(response.json)
+        assert output.find(str(body_one)) >= 0
+        assert output.find(str(body_two)) >= 0
