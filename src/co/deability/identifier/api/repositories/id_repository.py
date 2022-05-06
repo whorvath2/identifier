@@ -271,7 +271,7 @@ class IdRepository:
         data_path.write_text(data=json.dumps(data), encoding=config.ENCODING)
         return self
 
-    def get_current_data(self, identifier: str) -> Any:
+    def get_current_data(self, identifier: str) -> [None, dict[str, Any]]:
         """
         Returns the most recent data stored under the supplied identifier, or None if the
         identifier is recognized and no data regarding that identifier is available. If
@@ -286,7 +286,7 @@ class IdRepository:
         if not data_files:
             return None
         data_files.sort(reverse=True)
-        return json.loads(data_files[0].read_text(encoding=config.ENCODING))
+        return {data_files[0].name: json.loads(data_files[0].read_text(encoding=config.ENCODING))}
 
 
     def get_all_data(self, identifier: str) -> Dict[str, Any]:

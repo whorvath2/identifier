@@ -53,7 +53,10 @@ class IdCreator:
 
 
 def get_current_data(identifier: str) -> dict[str, Any]:
-    return {f"{identifier}": _get_reader().get_current_data(identifier=identifier)}
+    data: Any = _get_reader().get_current_data(identifier=identifier)
+    if not data:
+        data = {}
+    return {f"{identifier}": data}
 
 
 def get_all_data(identifier: str) -> dict[str, Any]:
