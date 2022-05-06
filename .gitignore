@@ -26,3 +26,4 @@ identifier_api.egg-info/
 Dockerfile.dev
 docker-compose.dev.yml
 build/
+.idea/
