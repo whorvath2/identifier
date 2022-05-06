@@ -20,7 +20,7 @@ already known to the instance.
 
 Create a .env file in the root directory, and populate it with the following keys and your values:
 
-    LOCAL_DATA_PATH=[String; Filepath to the directory on the host in which identifier's data will be stored]
+    IDENTIFIER_DATA_PATH=[String; Filepath to the directory on the host in which identifier's data will be stored]
     IDENTIFIER_LOG_LEVEL=[String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
     BUILD_ID=[String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
     FLASK_ENV=[String; Flask's environment setting - development, production, etc.]
@@ -62,7 +62,7 @@ This will install the identifier api in the python virtual environment:
 ### Manual startup
 
     cd src
-    python -m co.deability.identifier.api.app
+    ROOT_LOG_LEVEL=INFO APP_LOG_LEVEL=DEBUG python -m co.deability.identifier.api.app
 
 ### Containerized startup
 
