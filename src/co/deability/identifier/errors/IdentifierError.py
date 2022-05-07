@@ -20,7 +20,7 @@ from typing import Final
 LOG: Final[Logger] = logging.getLogger()
 
 
-class IdentifierError(BaseException):
+class IdentifierError(Exception):
     """
     Base class for Identifier-specific exceptions.
     """
