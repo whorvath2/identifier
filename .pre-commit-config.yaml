@@ -16,7 +16,7 @@ repos:
     hooks:
       - id: run-pytest-pre-commit
         name: run-pytest-pre-commit
-        entry: pytest src/tests
+        entry: pytest
         language: system
         pass_filenames: false
         always_run: true
