@@ -55,7 +55,7 @@ def test_add_data():
         endpoint = f"{ROOT_DIR}/data/add/{random_id}"
         body = {"foo": "bar"}
         response = client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
-        assert response.json.get("foo") == "bar"
+        assert str(response.json).find(str(body)) >= 0
 
 
 def test_get_current_data():
@@ -68,7 +68,7 @@ def test_get_current_data():
         client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
         endpoint = f"{ROOT_DIR}/data/current/{random_id}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
-        assert response.json.get(f"{random_id}") == body
+        assert str(response.json).find(str(body)) >= 0
 
 
 def test_get_all_data():
