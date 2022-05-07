@@ -1,3 +1,18 @@
+"""
+Copyright © 2021 William L Horvath II
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 import inspect
 from http import HTTPStatus
 from typing import Optional
@@ -13,14 +28,12 @@ from co.deability.identifier.config import LOG
 def handle_assertion_errors(assertion_error: AssertionError) -> Response:
     if __debug__:
         frame = inspect.currentframe()
-        causes: list[frame] = inspect.getouterframes(frame=frame)
         internal_message: str = (
             f"Assertion error raised in {stack[1].function} after call from "
             f"{stack[2].function}"
         )
         LOG.error(
-            f"Assertion error raised in {stack[1].function} after call from "
-            f"{stack[2].function}",
+            internal_message,
             stack_info=True,
             exc_info=assertion_error,
         )

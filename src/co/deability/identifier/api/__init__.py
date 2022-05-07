@@ -19,7 +19,8 @@ from flask_cors import CORS
 from co.deability.identifier import config
 from co.deability.identifier.api.controllers.id_controller import id_blueprint
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
-
+from co.deability.identifier.errors.IdentifierError import IdentifierError
+from co.deability.identifier.errors import handling
 
 def init_app() -> Flask:
 
@@ -35,7 +36,10 @@ def init_app() -> Flask:
 
 
 def _register_error_handlers(app) -> None:
-    pass
+    app.register_error_handler(AssertionError, handling.handle_assertion_errors)
+    app.register_error_handler(IdentifierError, handling.handle_identifier_errors)
+    app.register_error_handler(404, handling.handle_url_not_found)
+    app.register_error_handler(500, handling.handle_internal_errors)
 
 
 def _register_blueprints(app) -> None:
