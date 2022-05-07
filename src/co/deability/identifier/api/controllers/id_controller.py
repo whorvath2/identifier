@@ -24,7 +24,7 @@ from co.deability.identifier.api.services.id_service import IdCreator
 from co.deability.identifier import config
 
 id_blueprint: Blueprint = Blueprint("identifier", __name__, url_prefix="/identifier")
-id_creator: Final[IdCreator] = IdCreator()
+ID_CREATOR: Final[IdCreator] = IdCreator()
 
 
 @id_blueprint.get("/")
@@ -55,7 +55,7 @@ def health_check():
 
 @id_blueprint.get("/new")
 def get_new_id():
-    return make_response(jsonify(id_creator.get_new_id()), HTTPStatus.CREATED)
+    return make_response(jsonify(ID_CREATOR.get_new_id()), HTTPStatus.CREATED)
 
 
 @id_blueprint.get("/exists/<identifier>")
@@ -68,7 +68,7 @@ def check_id_exists(identifier: str):
 @id_blueprint.post("/data/add/<identifier>")
 def add_data(identifier: str):
     return make_response(
-        jsonify(id_creator.add_data(data=request.json, identifier=identifier)),
+        jsonify(ID_CREATOR.add_data(data=request.json, identifier=identifier)),
         HTTPStatus.OK,
     )
 
@@ -82,4 +82,6 @@ def get_current_data(identifier: str):
 
 @id_blueprint.get("/data/all/<identifier>")
 def get_all_data(identifier: str):
-    return make_response(jsonify(id_service.get_all_data(identifier=identifier)), HTTPStatus.OK)
+    return make_response(
+        jsonify(id_service.get_all_data(identifier=identifier)), HTTPStatus.OK
+    )

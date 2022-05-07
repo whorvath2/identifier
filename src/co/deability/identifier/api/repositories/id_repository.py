@@ -42,8 +42,6 @@ VALID_CHARS: Final[str] = "0123456789abcdef"
 DATA_FILE: Final[str] = "_data.json"
 TIME_LENGTH: Final[int] = 12
 
-# TODO Allow specification of schema for data files
-
 
 def _is_valid(identifier: str) -> bool:
     """
@@ -82,8 +80,9 @@ def _generate_id() -> str:
 class IdRepository:
     """
     A repository for creating new identifiers that are guaranteed to have never been
-    returned previously by a WRITER instance. IdRepositories use the filesystem as their backing
-    data store, which obviates numerous problems related to performance and transaction ACID-ity.
+    returned previously by a WRITER instance posting to the same storage location. IdRepositories
+    use the filesystem as their backing data store, which obviates numerous problems related
+    to performance and transaction ACID-ity.
     """
 
     _readers: list["IdRepository"] = None
@@ -242,8 +241,6 @@ class IdRepository:
         """
         return self.type
 
-    # TODO enable a configurable write strategy that allows specifying new data as an
-    # rsync-style, only-what's-changed update, rather than requiring repetition of data across files.
     def add_data(self, data: dict, identifier: str) -> "IdRepository":
         """
         Records the supplied data, which represents the entity identified by the supplied
@@ -286,8 +283,11 @@ class IdRepository:
         if not data_files:
             return None
         data_files.sort(reverse=True)
-        return {data_files[0].name: json.loads(data_files[0].read_text(encoding=config.ENCODING))}
-
+        return {
+            data_files[0].name: json.loads(
+                data_files[0].read_text(encoding=config.ENCODING)
+            )
+        }
 
     def get_all_data(self, identifier: str) -> Dict[str, Any]:
         """
@@ -303,9 +303,10 @@ class IdRepository:
         data_files: list[Path] = self._get_all_data_file_paths(identifier=identifier)
         results: Dict[str, Any] = {}
         for file in data_files:
-            results.update({file.name: json.loads(file.read_text(encoding=config.ENCODING))})
+            results.update(
+                {file.name: json.loads(file.read_text(encoding=config.ENCODING))}
+            )
         return results
-
 
     def _get_all_data_file_paths(self, identifier: str) -> List[Path]:
         """
@@ -318,7 +319,6 @@ class IdRepository:
         id_folder: Path = self._path_calculator(identifier=identifier)
         data_files: list[Path] = list(id_folder.glob(f"*{DATA_FILE}"))
         return data_files
-
 
     def _check_identifier(self, identifier: str) -> None:
         """
@@ -335,7 +335,7 @@ class IdRepository:
 
     def _create_data_path(self, identifier) -> Path:
         """
-        Returns a path to which data about the entity represented by the supplied identifier
+        Returns a path to a file in which data about the entity represented by the supplied identifier
         may be written. The returned path has not been created, nor checked for existence; it
         falls to the user of this method to create the file.
 

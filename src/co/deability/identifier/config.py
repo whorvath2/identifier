@@ -50,7 +50,6 @@ MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
 
 # OTHER CONFIG
 TIMEZONE: timezone = timezone.utc
-# todo make encoding configurable
 ENCODING: str = "utf-8"
 
 # Report out
