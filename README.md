@@ -20,15 +20,27 @@ already known to the instance.
 
 Create a .env file in the root directory, and populate it with the following keys and your values:
 
-    IDENTIFIER_DATA_PATH=[String; Filepath to the directory on the host in which identifier's data will be stored]
-    IDENTIFIER_LOG_LEVEL=[String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
-    BUILD_ID=[String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
-    FLASK_ENV=[String; Flask's environment setting - development, production, etc.]
-    IUID=[Integer; value for the user ID for the owner of the identifier process; e.g. 1001]
-    IGID=[Integer; value for the group ID for the owner of the identifier process; e.g. 1002]
-    IDENTIFIER_MAX_READER_COUNT=[Integer; Maximum number of reader repository instances]
-    IDENTIFIER_MAX_RETRIES=[Integer; Maximum number of times to retry a write operation]
-    CERT_SUBJ=[String; Subject line for the self-signed certificate; e.g., "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost"]
+    IDENTIFIER_DATA_PATH = [String; Filepath to the directory on the host in which identifier's data will be stored]
+    IDENTIFIER_LOG_LEVEL = [String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
+    BUILD_ID = [String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
+    FLASK_ENV = [String; Flask's environment setting - development, production, etc.]
+    IUID = [Integer; value for the user ID for the owner of the identifier process; e.g. 1001]
+    IGID = [Integer; value for the group ID for the owner of the identifier process; e.g. 1002]
+    IDENTIFIER_MAX_READER_COUNT = [Integer; Maximum number of reader repository instances]
+    IDENTIFIER_MAX_RETRIES = [Integer; Maximum number of times to retry a write operation]
+    IDENTIFIER_TEXT_ENCODING = [String; Encoding scheme for text data I/O; default is "utf-8"]
+    CERT_SUBJ = [String; Subject line for the self-signed certificate; e.g., "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost"]
+    # zsh
+    export IDENTIFIER_DATA_PATH
+    export IDENTIFIER_LOG_LEVEL
+    export BUILD_ID
+    export FLASK_ENV
+    export IUID
+    export IGID
+    export IDENTIFIER_MAX_READER_COUNT
+    export IDENTIFIER_MAX_RETRIES
+    export IDENTIFIER_TEXT_ENCODING
+    export CERT_SUBJ
 
 Alternatively, set the environment variables in [docker-compose](docker-compose.yml) by specifying
 their values directly, though this is not a recommended practice for security and transportability

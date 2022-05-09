@@ -27,9 +27,11 @@ services:
         - identifier_log_level=${IDENTIFIER_LOG_LEVEL}
         - identifier_max_reader_count=${IDENTIFIER_MAX_READER_COUNT}
         - identifier_max_retries=${IDENTIFIER_MAX_RETRIES}
+        - identifier_text_encoding=${IDENTIFIER_TEXT_ENCODING}
         - flask_env=${FLASK_ENV}
         - build_id=${BUILD_ID}
         - cert_subj=${CERT_SUBJ}
+
     ports:
       - "4430:443"
     container_name: identifier_api

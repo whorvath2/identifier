@@ -24,15 +24,16 @@ ARG flask_env
 ARG build_id
 ARG cert_subj
 
-ENV VIRTUAL_ENV=.venv
-ENV ROOT_LOG_LEVEL=INFO
-ENV IDENTIFIER_DATA_PATH=$identifier_data_path
 ENV APP_LOG_LEVEL=$identifier_log_level
-ENV IDENTIFIER_MAX_READER_COUNT=$identifier_max_reader_count
-ENV IDENTIFIER_MAX_RETRIES=$identifier_max_retries
-ENV FLASK_ENV=$flask_env
 ENV BUILD_ID=$build_id
 ENV CERT_SUBJ=$cert_subj
+ENV FLASK_ENV=$flask_env
+ENV IDENTIFIER_DATA_PATH=$identifier_data_path
+ENV IDENTIFIER_MAX_READER_COUNT=$identifier_max_reader_count
+ENV IDENTIFIER_MAX_RETRIES=$identifier_max_retries
+ENV IDENTIFIER_TEXT_ENCODING=$identifier_text_encoding
+ENV ROOT_LOG_LEVEL=INFO
+ENV VIRTUAL_ENV=.venv
 
 RUN apt-get update
 RUN apt-get install -y nginx supervisor openssl

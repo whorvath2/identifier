@@ -24,7 +24,6 @@ from co.deability.identifier.errors.EnvironmentError import EnvironmentError
 BUILD_ID: Final[str] = os.environ.get("BUILD_ID", "N/A")
 
 # LOGGING CONFIG
-ID_LOG_NAME: Final[str] = "id_log"
 ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
 APP_LOG_LEVEL: Final[str] = os.environ.get("APP_LOG_LEVEL")
 if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
@@ -33,7 +32,7 @@ if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
         "APP_LOG_LEVEL are not set."
     )
 logging.basicConfig(level=ROOT_LOG_LEVEL)
-LOG = logging.getLogger(ID_LOG_NAME)
+LOG = logging.getLogger("id_log")
 LOG.setLevel(level=APP_LOG_LEVEL)
 
 # DATA CONFIG
@@ -50,7 +49,14 @@ MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
 
 # OTHER CONFIG
 TIMEZONE: timezone = timezone.utc
-ENCODING: str = "utf-8"
+TEXT_ENCODING: str = str(os.environ.get("IDENTIFIER_TEXT_ENCODING", "utf-8"))
+# Verify text encoding value
+try:
+    " ".encode(TEXT_ENCODING)
+except LookupError:
+    raise EnvironmentError(
+        explanation="The IDENTIFIER_TEXT_ENCODING variable is missing or has an unsupported value."
+    )
 
 # Report out
 LOG.info("Config loaded")
@@ -62,6 +68,7 @@ LOG.debug(
             "IDENTIFIER_DATA_PATH": IDENTIFIER_DATA_PATH,
             "MAX_READER_COUNT": MAX_READER_COUNT,
             "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
+            "TEXT_ENCODING": TEXT_ENCODING,
         }
     )
 )

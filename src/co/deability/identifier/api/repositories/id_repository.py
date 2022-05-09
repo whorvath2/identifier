@@ -265,7 +265,7 @@ class IdRepository:
             retries += 1
             if retries == config.MAX_WRITE_RETRIES:
                 raise TooManyRetriesError(retries=retries)
-        data_path.write_text(data=json.dumps(data), encoding=config.ENCODING)
+        data_path.write_text(data=json.dumps(data), encoding=config.TEXT_ENCODING)
         return self
 
     def get_current_data(self, identifier: str) -> [None, dict[str, Any]]:
@@ -285,7 +285,7 @@ class IdRepository:
         data_files.sort(reverse=True)
         return {
             data_files[0].name: json.loads(
-                data_files[0].read_text(encoding=config.ENCODING)
+                data_files[0].read_text(encoding=config.TEXT_ENCODING)
             )
         }
 
@@ -304,7 +304,7 @@ class IdRepository:
         results: Dict[str, Any] = {}
         for file in data_files:
             results.update(
-                {file.name: json.loads(file.read_text(encoding=config.ENCODING))}
+                {file.name: json.loads(file.read_text(encoding=config.TEXT_ENCODING))}
             )
         return results
 
