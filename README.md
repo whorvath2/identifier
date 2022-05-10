@@ -12,42 +12,38 @@ already known to the instance.
 
 ## Setup
 
-### Create a virtual environment for Python
-
-    python3 -m venv .venv
-
 ### Set environment variables
 
 Create a .env file in the root directory, and populate it with the following keys and your values:
 
-    IDENTIFIER_DATA_PATH = [String; Filepath to the directory on the host in which identifier's data will be stored]
-    IDENTIFIER_LOG_LEVEL = [String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
-    BUILD_ID = [String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
-    FLASK_ENV = [String; Flask's environment setting - development, production, etc.]
-    IUID = [Integer; value for the user ID for the owner of the identifier process; e.g. 1001]
-    IGID = [Integer; value for the group ID for the owner of the identifier process; e.g. 1002]
-    IDENTIFIER_MAX_READER_COUNT = [Integer; Maximum number of reader repository instances]
-    IDENTIFIER_MAX_RETRIES = [Integer; Maximum number of times to retry a write operation]
-    IDENTIFIER_TEXT_ENCODING = [String; Encoding scheme for text data I/O; default is "utf-8"]
-    CERT_SUBJ = [String; Subject line for the self-signed certificate; e.g., "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost"]
     # zsh
-    export IDENTIFIER_DATA_PATH
-    export IDENTIFIER_LOG_LEVEL
-    export BUILD_ID
-    export FLASK_ENV
-    export IUID
-    export IGID
-    export IDENTIFIER_MAX_READER_COUNT
-    export IDENTIFIER_MAX_RETRIES
-    export IDENTIFIER_TEXT_ENCODING
-    export CERT_SUBJ
+    export ROOT_LOG_LEVEL = [String; Logging level for the python environment; forces "INFO" when containerized 
+                             unless the dockerfile is modified.]
+    export LOCAL_DATA_PATH = [String; file path on a formatted block storage device mounted in the host 
+                              where identifier's data will be stored when it is run inside a container; 
+                              see docker-compose.yml]
+    export IDENTIFIER_LOG_LEVEL = [String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
+    export IDENTIFIER_DATA_PATH = [String; Filepath to the directory where identifier's data will be stored]
+    export IDENTIFIER_MAX_READER_COUNT = [Integer; Maximum number of read-only repository instances]
+    export IDENTIFIER_MAX_RETRIES = [Integer; Maximum number of times to retry a write operation]
+    export IDENTIFIER_TEXT_ENCODING = [String; Encoding scheme for text data I/O; default is "utf-8"]
+    export BUILD_ID = [String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
+    export FLASK_ENV = [String; Flask's environment setting - development, production, etc.]
+    export IUID = [Integer; value for the user ID for the owner of the identifier process; e.g. 1001]
+    export IGID = [Integer; value for the group ID for the owner of the identifier process; e.g. 1002]
+    export CERT_SUBJ = [String; Subject line for a self-signed certificate for development; 
+                        e.g., "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost"]
 
 Alternatively, set the environment variables in [docker-compose](docker-compose.yml) by specifying
-their values directly, though this is not a recommended practice for security and transportability
+their values directly, though this is not a recommended practice for security and portability
 reasons.
 
 *Suggestion*: use [mkcert](https://github.com/FiloSottile/mkcert) for creating and installing
 certificates suitable for use in development (*not* in production.)
+
+### Create a virtual environment for Python
+
+    python3 -m venv .venv
 
 ### Activate the virtual environment and the identifier environment
 
@@ -74,7 +70,7 @@ This will install the identifier api in the python virtual environment:
 ### Manual startup
 
     cd src
-    ROOT_LOG_LEVEL=INFO APP_LOG_LEVEL=DEBUG python -m co.deability.identifier.api.app
+    python -m co.deability.identifier.api.app
 
 ### Containerized startup
 
@@ -97,7 +93,22 @@ Note: additional information is included in pre-production environments
 
 ## Development
 
+### Pre-Commit
+
+Identifier uses [pre-commit](https://pre-commit.com) to add hooks to git that will 
+fire before a commit is accepted. Install it in your virtual environment via pip:
+
+    pip install pre-commit
+
+The configuration file at [.pre-commit-config.yaml](.pre-commit-config.yaml) specifies that `pytest` 
+should run prior to committing local changes. Add it to your local git repository's pre-commit 
+hooks script using pre-commit's installer:
+
+    pre-commit install
+
 ### Testing
+
+To run the available unit and integration tests manually:
 
     pytest src/tests
 
