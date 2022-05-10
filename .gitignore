@@ -23,6 +23,7 @@ dist/
 out/
 identifier_api.egg-info/
 .env
+.env_local
 Dockerfile.dev
 docker-compose.dev.yml
 build/
