@@ -21,8 +21,15 @@ from conftest import ACCEPT_JSON_HEADERS
 ROOT_DIR: Final[str] = "/identifier"
 
 
-def test_health_check():
+def _create_id():
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/new"
+        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
+        random_id = id_content.get("created")
+        return random_id
 
+
+def test_health_check():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
@@ -30,18 +37,14 @@ def test_health_check():
 
 
 def test_create_id():
-    with app.test_client() as client:
-        endpoint = f"{ROOT_DIR}/new"
-        response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
-        assert "created" in str(response.json)
-        assert len(response.json.get("created")) == 32
+    random_id = _create_id()
+    assert len(random_id) == 32
 
 
 def test_check_id_exists():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
-        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
-        random_id = id_content.get("created")
+        random_id = _create_id()
         endpoint = f"{ROOT_DIR}/exists/{random_id}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
         assert response.json.get(f"{random_id} exists") is True
@@ -50,8 +53,7 @@ def test_check_id_exists():
 def test_add_data():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
-        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
-        random_id = id_content.get("created")
+        random_id = _create_id()
         endpoint = f"{ROOT_DIR}/data/add/{random_id}"
         body = {"foo": "bar"}
         response = client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
@@ -61,8 +63,7 @@ def test_add_data():
 def test_get_current_data():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
-        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
-        random_id = id_content.get("created")
+        random_id = _create_id()
         endpoint = f"{ROOT_DIR}/data/add/{random_id}"
         body = {"foo": "bar"}
         client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body)
@@ -74,8 +75,7 @@ def test_get_current_data():
 def test_get_all_data():
     with app.test_client() as client:
         endpoint = f"{ROOT_DIR}/new"
-        id_content = client.get(endpoint, headers=ACCEPT_JSON_HEADERS).json
-        random_id = id_content.get("created")
+        random_id = _create_id()
         endpoint = f"{ROOT_DIR}/data/add/{random_id}"
         body_one = {"foo": "bar"}
         client.post(endpoint, headers=ACCEPT_JSON_HEADERS, json=body_one)
