@@ -31,14 +31,29 @@ def now_epoch_milli() -> int:
 
 
 def now_epoch_micro() -> int:
+    """
+    Returns the number of microseconds since the epoch in the application's configured timezone.
+    """
     return int((datetime.now(tz=timezone.utc) - EPOCH) / timedelta(microseconds=1))
 
 
 def now_formatted(format: str = None) -> str:
+    """
+    Returns the current time in the supplied format, which must be compatible with datetime.strftime.
+
+    :param format: The string defining how the current time should be formatted.
+    """
     return datetime.now(tz=timezone.utc).strftime(format if format else DEFAULT_FORMAT)
 
 
 def time_machine(type: TimeMachineType):
+    """
+    Returns the current time to the level of precision (microseconds, milliseconds, etc.) described
+    in the supplied type parameter.
+
+    :param type: The level of accuracy of the returned value.
+    :return: The current time at the supplied level of precision.
+    """
     if type == TimeMachineType.MICRO:
         yield now_epoch_milli()
     elif type == TimeMachineType.MILLI:
