@@ -26,9 +26,7 @@ class BadRepositoryError(IdentifierError):
     """
 
     def __init__(self):
-        message: str = (
-            f"The repository at {config.IDENTIFIER_DATA_PATH} is not available."
-        )
+        message: str = f"The repository at {config.DATA_PATH} is not available."
         super().__init__(
             message=message,
             error_code=HTTPStatus.INTERNAL_SERVER_ERROR,

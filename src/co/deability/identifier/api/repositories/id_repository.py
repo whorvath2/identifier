@@ -94,7 +94,7 @@ class IdRepository:
     def __init__(
         self,
         repository_type: IdRepositoryType,
-        base_path: (str, PathLike) = config.IDENTIFIER_DATA_PATH,
+        base_path: (str, PathLike) = config.DATA_PATH,
     ) -> None:
 
         if not isinstance(repository_type, IdRepositoryType):

@@ -22,6 +22,7 @@ from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
 from co.deability.identifier.errors.IdentifierError import IdentifierError
 from co.deability.identifier.errors import handling
 
+
 def init_app() -> Flask:
 
     app: Flask = Flask(__name__)
@@ -48,6 +49,6 @@ def _register_blueprints(app) -> None:
 
 def _initialize_data_store() -> None:
     try:
-        config.IDENTIFIER_DATA_PATH.mkdir(parents=True, exist_ok=True)
+        config.DATA_PATH.mkdir(parents=True, exist_ok=True)
     except Exception:
         raise BadRepositoryError()

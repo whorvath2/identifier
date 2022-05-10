@@ -25,10 +25,11 @@ import pytest
 # add the parent directory to the path per noqa: E402
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + "/../")
-os.environ["APP_LOG_LEVEL"] = "DEBUG"
-os.environ["ROOT_LOG_LEVEL"] = "INFO"
 test_path: Path = Path(Path.home().absolute(), ".identifier/test")
 os.environ["IDENTIFIER_DATA_PATH"] = str(test_path)
+os.environ["IDENTIFIER_LOG_LEVEL"] = "DEBUG"
+os.environ["ROOT_LOG_LEVEL"] = "INFO"
+
 
 from co.deability.identifier import api
 from co.deability.identifier.api.repositories.id_repository import IdRepository
@@ -48,6 +49,9 @@ def pytest_runtest_setup(item):
 def pytest_runtest_teardown(item):
     print(f"...Destroying temporary path {test_path}")
     shutil.rmtree(test_path, ignore_errors=True)
+    os.environ["IDENTIFIER_DATA_PATH"] = str(test_path)
+    os.environ["IDENTIFIER_LOG_LEVEL"] = "DEBUG"
+    os.environ["ROOT_LOG_LEVEL"] = "INFO"
 
 
 @pytest.fixture

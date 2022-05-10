@@ -25,15 +25,24 @@ BUILD_ID: Final[str] = os.environ.get("BUILD_ID", "N/A")
 
 # LOGGING CONFIG
 ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
-APP_LOG_LEVEL: Final[str] = os.environ.get("APP_LOG_LEVEL")
+APP_LOG_LEVEL: Final[str] = os.environ.get("IDENTIFIER_LOG_LEVEL")
 if not ROOT_LOG_LEVEL or not APP_LOG_LEVEL:
     raise EnvironmentError(
         explanation="Either or both of the environment variables ROOT_LOG_LEVEL and "
-        "APP_LOG_LEVEL are not set."
+        "IDENTIFIER_LOG_LEVEL are not set."
     )
-logging.basicConfig(level=ROOT_LOG_LEVEL)
+
 LOG = logging.getLogger("id_log")
-LOG.setLevel(level=APP_LOG_LEVEL)
+try:
+    logging.getLogger().setLevel(level=ROOT_LOG_LEVEL)
+    LOG.setLevel(level=APP_LOG_LEVEL)
+except ValueError:
+    raise EnvironmentError(
+        explanation="Either or both of the environment variables ROOT_LOG_LEVEL and "
+        "IDENTIFIER_LOG_LEVEL are set to an unsupported value; use only CRITICAL, FATAL, "
+        "ERROR, WARN, WARNING, INFO, or DEBUG."
+    )
+
 
 # DATA CONFIG
 _data_path: str = os.environ.get("IDENTIFIER_DATA_PATH")
@@ -41,9 +50,9 @@ if not _data_path:
     raise EnvironmentError(
         explanation="The IDENTIFIER_DATA_PATH environment variable is not set."
     )
-IDENTIFIER_DATA_PATH: Final[Path] = Path(_data_path).absolute()
-LOG.info(f"Constructing data path {IDENTIFIER_DATA_PATH}")
-IDENTIFIER_DATA_PATH.mkdir(parents=True, exist_ok=True)
+DATA_PATH: Final[Path] = Path(_data_path).absolute()
+LOG.info(f"Constructing data path {DATA_PATH}")
+DATA_PATH.mkdir(parents=True, exist_ok=True)
 MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))
 MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
 
@@ -65,7 +74,7 @@ LOG.debug(
         {
             "ROOT_LOG_LEVEL": ROOT_LOG_LEVEL,
             "APP_LOG_LEVEL": APP_LOG_LEVEL,
-            "IDENTIFIER_DATA_PATH": IDENTIFIER_DATA_PATH,
+            "DATA_PATH": DATA_PATH,
             "MAX_READER_COUNT": MAX_READER_COUNT,
             "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
             "TEXT_ENCODING": TEXT_ENCODING,

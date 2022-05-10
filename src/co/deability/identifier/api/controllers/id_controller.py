@@ -42,7 +42,7 @@ def health_check():
                 "config": {
                     "ROOT_LOG_LEVEL": f"{config.ROOT_LOG_LEVEL}",
                     "APP_LOG_LEVEL": f"{config.APP_LOG_LEVEL}",
-                    "IDENTIFIER_DATA_PATH": f"{config.IDENTIFIER_DATA_PATH}",
+                    "DATA_PATH": f"{config.DATA_PATH}",
                     "MAX_READER_COUNT": f"{config.MAX_READER_COUNT}",
                     "MAX_WRITE_RETRIES": f"{config.MAX_WRITE_RETRIES}",
                 }
