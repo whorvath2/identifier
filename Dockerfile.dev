@@ -12,30 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.9
+FROM identifier_api
 
 ARG guid
 ARG uuid
 ARG identifier_data_path
-ARG build_id
 ARG flask_env
+ARG build_id
+ARG cert_subj
 
 ENV IDENTIFIER_DATA_PATH=$identifier_data_path
 ENV BUILD_ID=$build_id
 ENV FLASK_ENV=$flask_env
 ENV VIRTUAL_ENV=.venv
-ENV ROOT_LOG_LEVEL=INFO
+ENV ROOT_LOG_LEVEL=DEBUG
 
-RUN apt-get update
-RUN apt-get install -y nginx supervisor openssl
-
-RUN groupadd -g $guid api-service \
-    && useradd -d /service/identifier -s /bin/bash -u $uuid -g $guid api-service \
-    && mkdir -p /service/identifier \
-    && mkdir -p /service/identifier/.ssh \
-    && mkdir -p $identifier_data_path \
-    && chown -R api-service:api-service /service/identifier \
-    && chown -R api-service:api-service $identifier_data_path
+RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout /etc/ssl/private/identifier.key \
+        -out /etc/ssl/certs/identifier.crt \
+        -subj $cert_subj
 
 WORKDIR /service/identifier
 COPY . /service/identifier

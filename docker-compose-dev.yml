@@ -12,19 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.venv
-.mypy_cache
-*.pyc
-__pycache__/
-tags
-*.iml
-*.egg-info/
-dist/
-out/
-identifier_api.egg-info/
-.env
-.env_dev
-build/
-.idea/
-*.crt
-*.key
+version: "3.9"
+
+services:
+  api:
+    env_file:
+      - .env
+      - .env_dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - uuid=1001
+        - guid=1002
+        - identifier_data_path=${IDENTIFIER_DATA_PATH}
+        - flask_env=development
+        - build_id=${BUILD_ID}
+        - cert_subj=${CERT_SUBJ}
+    ports:
+      - "4430:443"
+    container_name: identifier_api
+    volumes:
+      - type: bind
+        source: ${LOCAL_DATA_PATH}
+        target: ${IDENTIFIER_DATA_PATH}

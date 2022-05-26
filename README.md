@@ -14,25 +14,21 @@ already known to the instance.
 
 ### Set environment variables
 
-Create a .env file in the root directory, and populate it with the following keys and your values:
+Create a file named `.env` in this project's root directory, and populate it with the following keys and your values:
 
     # zsh
-    export ROOT_LOG_LEVEL = [String; Logging level for the python environment; forces "INFO" when containerized 
-                             unless the dockerfile is modified.]
-    export LOCAL_DATA_PATH = [String; file path on a formatted block storage device mounted in the host 
-                              where identifier's data will be stored when it is run inside a container; 
-                              see docker-compose.yml]
-    export IDENTIFIER_LOG_LEVEL = [String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
-    export IDENTIFIER_DATA_PATH = [String; Filepath to the directory where identifier's data will be stored]
-    export IDENTIFIER_MAX_READER_COUNT = [Integer; Maximum number of read-only repository instances]
-    export IDENTIFIER_MAX_RETRIES = [Integer; Maximum number of times to retry a write operation]
-    export IDENTIFIER_TEXT_ENCODING = [String; Encoding scheme for text data I/O; default is "utf-8"]
-    export BUILD_ID = [String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
-    export FLASK_ENV = [String; Flask's environment setting - development, production, etc.]
-    export IUID = [Integer; value for the user ID for the owner of the identifier process; e.g. 1001]
-    export IGID = [Integer; value for the group ID for the owner of the identifier process; e.g. 1002]
-    export CERT_SUBJ = [String; Subject line for a self-signed certificate for development; 
-                        e.g., "/C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost"]
+    export COMPOSE_PROJECT_NAME=identifier_api
+    export COMPOSE_FILE=docker-compose.yml
+    export TLS_KEY=[String; the location of the file containing the key for the web server certificate. 
+                    E.g.: ./identifier.key]
+    export TLS_CERT=[String; the location of the file containing the public web server certificate. 
+                     E.g.: ./identifier.crt]
+    export IDENTIFIER_LOG_LEVEL=[String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
+    export IDENTIFIER_DATA_PATH=[String; Filepath to the directory where identifier's data will be stored]
+    export IDENTIFIER_MAX_READER_COUNT=[Integer; Maximum number of read-only repository instances]
+    export IDENTIFIER_MAX_RETRIES=[Integer; Maximum number of times to retry a write operation]
+    export IDENTIFIER_TEXT_ENCODING=[String; Encoding scheme for text data I/O; default is "utf-8"]
+    export BUILD_ID=[String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
 
 Alternatively, set the environment variables in [docker-compose](docker-compose.yml) by specifying
 their values directly, though this is not a recommended practice for security and portability
@@ -50,7 +46,7 @@ certificates suitable for use in development (*not* in production.)
     source .venv/bin/activate
     source .env
 
-### Build identifier
+### Build the identifier package
 
     pip install setuptools
     pip install build
@@ -58,8 +54,6 @@ certificates suitable for use in development (*not* in production.)
     python -m build
 
 ## Installation
-
-### Install the distribution file
 
 This will install the identifier api in the python virtual environment:
 
@@ -74,7 +68,7 @@ This will install the identifier api in the python virtual environment:
 
 ### Containerized startup
 
-    docker-compose -p identifier up
+    sh build.sh
 
 [Open your browser](https://localhost:4430/identifier) to verify that it's running, or use `curl`:
 
@@ -91,7 +85,30 @@ The output should look like this:
 
 Note: additional information is included in pre-production environments
 
-## Development
+## Contributing
+
+You can leverage tools during development to make life simpler.
+
+### Environment
+
+Create an additional environment file named `.env_dev` that specifies the following variables:
+
+    export COMPOSE_FILE=docker-compose-dev.yml
+    export CERT_SUBJ=[String; Subject line for a self-signed certificate for development;
+                      e.g., /C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost]
+    export LOCAL_DATA_PATH=[String; file path on a formatted block storage device mounted in the host 
+                            where identifier's data will be stored when it is run inside a container;
+                            see docker-compose-dev.yml]
+
+### Build
+
+Using the `build_dev.sh` script will shorten your build time by obviating the downloading of dependencies that are
+included in the `identifier_api` image created by `build.sh`. Note that the `build.sh` script must be run at least once
+prior to running `build_dev.sh`:
+
+    sh build.sh
+    ...
+    sh build_dev.sh
 
 ### Pre-Commit
 

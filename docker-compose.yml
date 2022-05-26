@@ -16,24 +16,40 @@ version: "3.9"
 
 services:
   api:
+    secrets:
+      - source: server_certificate
+        uid: "1001"
+        gid: "1002"
+        mode: 0444
+        target: /etc/ssl/certs/identifier.crt
+      - source: server_certificate_key
+        uid: "1001"
+        gid: "1002"
+        mode: 0440
+        target: /etc/ssl/private/identifier.key
     env_file:
       - .env
     build:
       context: .
+      dockerfile: Dockerfile
       args:
-        - guid=${IGID}
-        - uuid=${IUID}
+        - uuid=1001
+        - guid=1002
         - identifier_data_path=${IDENTIFIER_DATA_PATH}
-        - identifier_log_level=${IDENTIFIER_LOG_LEVEL}
-        - identifier_max_reader_count=${IDENTIFIER_MAX_READER_COUNT}
-        - identifier_max_retries=${IDENTIFIER_MAX_RETRIES}
-        - identifier_text_encoding=${IDENTIFIER_TEXT_ENCODING}
-        - flask_env=${FLASK_ENV}
+        - flask_env=production
         - build_id=${BUILD_ID}
-        - cert_subj=${CERT_SUBJ}
-
     ports:
       - "4430:443"
     container_name: identifier_api
     volumes:
-      - ${LOCAL_DATA_PATH}:${IDENTIFIER_DATA_PATH}
+      - identifier_data:${IDENTIFIER_DATA_PATH}
+
+volumes:
+  identifier_data:
+
+
+secrets:
+  server_certificate_key:
+    file: ${TLS_KEY}
+  server_certificate:
+    file: ${TLS_CERT}

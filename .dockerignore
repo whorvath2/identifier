@@ -22,3 +22,5 @@ deployspec.yml
 testspec.yml
 README*
 src/tests/*
+*.crt
+*.key
