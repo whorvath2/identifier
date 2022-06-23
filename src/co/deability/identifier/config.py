@@ -55,6 +55,7 @@ LOG.info(f"Constructing data path {DATA_PATH}")
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))
 MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
+IDENTIFIER_LENGTH: int = int(os.environ.get("IDENTIFIER_ID_LENGTH", 32))
 
 # OTHER CONFIG
 TIMEZONE: timezone = timezone.utc

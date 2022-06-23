@@ -22,7 +22,7 @@ import uuid
 from functools import cache
 from os import path, PathLike
 from pathlib import Path
-from typing import Final, Any, Dict, List
+from typing import Final, Any, Dict, List, Optional
 
 from co.deability.identifier import config
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
@@ -77,16 +77,16 @@ def _generate_id() -> str:
     return str(uuid.uuid4()).replace("-", "", 4)
 
 
-class IdRepository:
+class UuidRepository:
     """
-    A repository for creating new identifiers that are guaranteed to have never been
-    returned previously by a WRITER instance posting to the same storage location. IdRepositories
-    use the filesystem as their backing data store, which obviates numerous problems related
-    to performance and transaction ACID-ity.
+    A repository for creating new identifiers based on the UUID4 algorithm that are guaranteed
+    to have never been returned previously by a WRITER instance posting to the same storage
+    location. UuidRepository instances use the filesystem as their backing data store, which
+    obviates numerous problems related to performance and transaction ACID-ity.
     """
 
-    _readers: list["IdRepository"] = None
-    _writer: "IdRepository" = None
+    _readers: list["UuidRepository"] = None
+    _writer: "UuidRepository" = None
     _reader_index: int = 0
     _serialization_failures: int = 0  # A crude indicator of what's going on that can be
     # included in log messages. May be removed or replaced in a future release.
@@ -117,7 +117,7 @@ class IdRepository:
         """
         Returns a file path for a directory derived from this instance's base_path and the
         supplied identifier that takes the form of a single-character directory structure.
-        E.g., for an IdRepository instance with a base_path of "/foo/bar" and an identifier
+        E.g., for an UuidRepository instance with a base_path of "/foo/bar" and an identifier
         value of "c963ef49afa5483bb1326e9525727140", the returned value would be
         "/foo/bar/c/9/6/3/e/f/4/9/a/f/a/5/4/8/3/b/b/1/3/2/6/e/9/5/2/5/7/2/7/1/4/0"
 
@@ -135,7 +135,7 @@ class IdRepository:
         Exceptions will be raised under the following conditions:
           * retries is None, not an integer, or is an integer less than zero;
           * an identifier cannot be serialized within the supplied number (retries) of attempts;
-          * this IdRepository instance's type is not IdRepositoryType.WRITER
+          * this UuidRepository instance's type is not IdRepositoryType.WRITER
 
         :param retries: The number of times to attempt to create an identifier and
         serialize it to disk before erroring out.
@@ -159,15 +159,15 @@ class IdRepository:
     @cache
     def exists(self, identifier: str) -> bool:
         """
-        Returns True if the supplied identifier already exists in this IdRepository instance;
-        False otherwise. An identifier exists in an IdRepository if it has already been
+        Returns True if the supplied identifier already exists in this UuidRepository instance;
+        False otherwise. An identifier exists in an UuidRepository if it has already been
         serialized to disk in the form of a directory.
 
         If the supplied identifier is not valid, an exception will be raised.
 
         :param identifier: The identifier to be checked to determine whether it is already known to
-        this IdRepository.
-        :return: True if the supplied identifier is valid and exists in this IdRepository; False
+        this UuidRepository.
+        :return: True if the supplied identifier is valid and exists in this UuidRepository; False
         otherwise.
         """
         if not _is_valid(identifier=identifier):
@@ -209,13 +209,13 @@ class IdRepository:
             )
         return False
 
-    def __new__(cls, *args, **kwargs) -> "IdRepository":
+    def __new__(cls, *args, **kwargs) -> "UuidRepository":
         """
         Returns a singleton if the caller requests a WRITER; otherwise returns a new or existing
         READER instance. (Existing reader instances are selected in round-robin fashion.)
         """
         if cls._writer is None and kwargs["repository_type"] is IdRepositoryType.WRITER:
-            cls._writer = super(IdRepository, cls).__new__(cls)
+            cls._writer = super(UuidRepository, cls).__new__(cls)
             return cls._writer
 
         else:
@@ -230,7 +230,7 @@ class IdRepository:
                 reader = cls._readers[cls._reader_index]
                 return reader
 
-            new_reader = super(IdRepository, cls).__new__(cls)
+            new_reader = super(UuidRepository, cls).__new__(cls)
             cls._readers.append(new_reader)
             return new_reader
 
@@ -241,17 +241,18 @@ class IdRepository:
         """
         return self.type
 
-    def add_data(self, data: dict, identifier: str) -> "IdRepository":
+    def add_data(self, data: Dict[str, Any], identifier: str) -> "UuidRepository":
         """
         Records the supplied data, which represents the entity identified by the supplied
         identifier.
 
-        Data is never destroyed; it is recorded in a ledger-like fashion. The data
-        of record for any particular identifier is always the most recently written.
+        The data added to an identifier instance is never destroyed; it is recorded in
+        a ledger-like fashion. The data of record for any particular identifier is always
+        the most recently written.
 
         :param data: The data to be recorded as the information of record regarding the entity
         represented by the supplied identifier.
-        :param identifier: The identifier (unique within the context of this IdRepository
+        :param identifier: The identifier (unique within the context of this UuidRepository
         instance, and which already exists therein) of the entity represented by the supplied data.
         """
         if self.type != IdRepositoryType.WRITER:
@@ -268,13 +269,13 @@ class IdRepository:
         data_path.write_text(data=json.dumps(data), encoding=config.TEXT_ENCODING)
         return self
 
-    def get_current_data(self, identifier: str) -> [None, dict[str, Any]]:
+    def get_current_data(self, identifier: str) -> Optional[Dict[str, Any]]:
         """
         Returns the most recent data stored under the supplied identifier, or None if the
         identifier is recognized and no data regarding that identifier is available. If
         the identifier is not recognized, an error will be raised.
 
-        :param identifier: The identifier (unique within the context of this IdRepository
+        :param identifier: The identifier (unique within the context of this UuidRepository
         instance, and which already exists therein) of the entity represented by the returned data.
         :return: the most recent data stored under the supplied identifier.
         """
@@ -323,14 +324,14 @@ class IdRepository:
     def _check_identifier(self, identifier: str) -> None:
         """
         Raises an error if the supplied identifier is not valid or not recognized by this
-        IdRepository instance; otherwise has no effect.
+        UuidRepository instance; otherwise has no effect.
 
         :param identifier: The identifier to be evaluated as to whether appears in the data
-        store backing this IdRepository instance.
+        store backing this UuidRepository instance.
         """
         if not self.exists(identifier):
             raise NoSuchEntityError(
-                message=f"The supplied identifier {identifier} is not recognized."
+                message=f"The supplied identifier is not recognized."
             )
 
     def _create_data_path(self, identifier) -> Path:

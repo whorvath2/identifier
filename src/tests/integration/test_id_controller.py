@@ -43,7 +43,6 @@ def test_create_id():
 
 def test_check_id_exists():
     with app.test_client() as client:
-        endpoint = f"{ROOT_DIR}/new"
         random_id = _create_id()
         endpoint = f"{ROOT_DIR}/exists/{random_id}"
         response = client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
@@ -52,7 +51,6 @@ def test_check_id_exists():
 
 def test_add_data():
     with app.test_client() as client:
-        endpoint = f"{ROOT_DIR}/new"
         random_id = _create_id()
         endpoint = f"{ROOT_DIR}/data/add/{random_id}"
         body = {"foo": "bar"}

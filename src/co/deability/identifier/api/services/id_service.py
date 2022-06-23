@@ -16,26 +16,26 @@ limitations under the License.
 from typing import Any, Final
 
 from co.deability.identifier import config
-from co.deability.identifier.api.repositories.id_repository import (
-    IdRepository,
+from co.deability.identifier.api.repositories.uuid_repository import (
+    UuidRepository,
     IdRepositoryType,
 )
 from co.deability.identifier.errors.BadRequestError import BadRequestError
 from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 
-WRITER_REPOSITORY: Final[IdRepository] = IdRepository(
+WRITER_REPOSITORY: Final[UuidRepository] = UuidRepository(
     repository_type=IdRepositoryType.WRITER
 )
 
 
-def create_new_id(id_repository: IdRepository = WRITER_REPOSITORY) -> dict:
+def create_new_id(id_repository: UuidRepository = WRITER_REPOSITORY) -> dict:
     return {"created": id_repository.create_id(retries=config.MAX_WRITE_RETRIES)}
 
 
 def add_data(
     data: dict[str, Any],
     identifier: str,
-    id_repository: IdRepository = WRITER_REPOSITORY,
+    id_repository: UuidRepository = WRITER_REPOSITORY,
 ) -> dict[str, Any]:
     if not data:
         raise BadRequestError(message="The data is missing or empty.")
@@ -58,19 +58,19 @@ def exists(identifier: str) -> dict:
     return {f"{identifier} exists": _get_reader().exists(identifier=identifier)}
 
 
-def _get_reader() -> IdRepository:
-    return IdRepository(repository_type=IdRepositoryType.READER)
+def _get_reader() -> UuidRepository:
+    return UuidRepository(repository_type=IdRepositoryType.READER)
 
 
 class IdCreator:
     """
-    Service class that supports use of a specific IdRepository instance, which must be an
+    Service class that supports use of a specific UuidRepository instance, which must be an
     IdRepositoryType.WRITER type.
     """
 
     def __init__(
         self,
-        id_repository: IdRepository = WRITER_REPOSITORY,
+        id_repository: UuidRepository = WRITER_REPOSITORY,
     ):
         if not id_repository.get_type() == IdRepositoryType.WRITER:
             raise IllegalArgumentError(

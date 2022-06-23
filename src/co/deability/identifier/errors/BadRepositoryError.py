@@ -21,7 +21,7 @@ from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 class BadRepositoryError(IdentifierError):
     """
-    Thrown when an IdentifierRepository can't be constructed because the minimum requirements
+    Thrown when an Identifier repository can't be constructed because the minimum requirements
     (such as the base path existing in the file system) haven't been met.
     """
 

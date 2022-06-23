@@ -23,8 +23,8 @@ from co.deability.identifier import config
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
 from co.deability.identifier.errors.IllegalArgumentError import IllegalArgumentError
 from co.deability.identifier.errors.IllegalIdentifierError import IllegalIdentifierError
-from co.deability.identifier.api.repositories.id_repository import (
-    IdRepository,
+from co.deability.identifier.api.repositories.uuid_repository import (
+    UuidRepository,
     _is_valid,
     _generate_id,
 )
@@ -35,33 +35,33 @@ from conftest import test_path
 
 def test_id_repository_construction():
     with pytest.raises(IllegalArgumentError):
-        IdRepository(repository_type="aString", base_path="./")
+        UuidRepository(repository_type="aString", base_path="./")
     with pytest.raises(BadRepositoryError):
-        IdRepository(
+        UuidRepository(
             repository_type=IdRepositoryType.WRITER,
             base_path="./foobar",
         )
 
-    IdRepository._writer = None
-    repository: IdRepository = IdRepository(
+    UuidRepository._writer = None
+    repository: UuidRepository = UuidRepository(
         repository_type=IdRepositoryType.WRITER,
         base_path=test_path,
     )
     assert repository._writer == repository
     assert len(repository._readers) <= config.MAX_READER_COUNT
 
-    IdRepository._readers = []
-    repository = IdRepository(
+    UuidRepository._readers = []
+    repository = UuidRepository(
         repository_type=IdRepositoryType.READER,
         base_path=test_path,
     )
-    assert IdRepository._readers[0] == repository
+    assert UuidRepository._readers[0] == repository
     os.environ["ID_MAX_READER_COUNT"] = "1"
-    another_repository: IdRepository = IdRepository(
+    another_repository: UuidRepository = UuidRepository(
         repository_type=IdRepositoryType.READER,
         base_path=test_path,
     )
-    assert IdRepository._readers[0] == repository
+    assert UuidRepository._readers[0] == repository
 
 
 def test_validity_tester():
@@ -79,50 +79,52 @@ def test_id_generator():
 
 
 def test_repository_create_id_fails_with_illegal_retries_values(
-    mock_id_repository_writer,
+    mock_uuid_repository_writer,
 ):
     with pytest.raises(IllegalArgumentError):
-        mock_id_repository_writer.create_id(retries=None)
+        mock_uuid_repository_writer.create_id(retries=None)
     with pytest.raises(IllegalArgumentError):
-        mock_id_repository_writer.create_id(retries="foobar")
+        mock_uuid_repository_writer.create_id(retries="foobar")
     with pytest.raises(IllegalArgumentError):
-        mock_id_repository_writer.create_id(retries=-1)
+        mock_uuid_repository_writer.create_id(retries=-1)
 
 
-def test_repository_calculates_paths_correctly(mock_id_repository_writer):
+def test_repository_calculates_paths_correctly(mock_uuid_repository_writer):
     an_id: str = "abc"
-    assert Path(test_path, "a/b/c") == mock_id_repository_writer._path_calculator(
+    assert Path(test_path, "a/b/c") == mock_uuid_repository_writer._path_calculator(
         identifier=an_id
     )
 
 
-def test_repository_creates_ids(mock_id_repository_writer):
-    an_id = mock_id_repository_writer.create_id()
+def test_repository_creates_ids(mock_uuid_repository_writer):
+    an_id = mock_uuid_repository_writer.create_id()
     assert (
         an_id
         and len(an_id) == 32
-        and Path(mock_id_repository_writer._path_calculator(an_id)).exists()
+        and Path(mock_uuid_repository_writer._path_calculator(an_id)).exists()
     )
 
 
-def test_create_id_with_bad_retries_raises_error(mock_id_repository_writer):
+def test_create_id_with_bad_retries_raises_error(mock_uuid_repository_writer):
     with pytest.raises(IllegalArgumentError):
-        mock_id_repository_writer.create_id(retries=None)
+        mock_uuid_repository_writer.create_id(retries=None)
     with pytest.raises(IllegalArgumentError):
-        mock_id_repository_writer.create_id(retries=-1)
+        mock_uuid_repository_writer.create_id(retries=-1)
 
 
-def test_create_id_with_failed_retries_raises_correct_error(mock_id_repository_writer):
-    holder = mock_id_repository_writer._serialize
-    mock_id_repository_writer._serialize = lambda identifier: False
+def test_create_id_with_failed_retries_raises_correct_error(
+    mock_uuid_repository_writer,
+):
+    holder = mock_uuid_repository_writer._serialize
+    mock_uuid_repository_writer._serialize = lambda identifier: False
     with pytest.raises(TooManyRetriesError):
-        mock_id_repository_writer.create_id(retries=0)
-    mock_id_repository_writer._serialize = holder
+        mock_uuid_repository_writer.create_id(retries=0)
+    mock_uuid_repository_writer._serialize = holder
 
 
-def test_repository_checks_identifier_existence_correctly(mock_id_repository_writer):
-    an_id = mock_id_repository_writer.create_id()
-    assert mock_id_repository_writer.exists(identifier=an_id)
+def test_repository_checks_identifier_existence_correctly(mock_uuid_repository_writer):
+    an_id = mock_uuid_repository_writer.create_id()
+    assert mock_uuid_repository_writer.exists(identifier=an_id)
 
     with pytest.raises(IllegalIdentifierError):
-        mock_id_repository_writer.exists(identifier="foobar")
+        mock_uuid_repository_writer.exists(identifier="foobar")

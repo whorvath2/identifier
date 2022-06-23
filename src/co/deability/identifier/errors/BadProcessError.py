@@ -20,13 +20,13 @@ from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 class BadProcessError(IdentifierError):
     """
-    Thrown when an IdRepository detects that the user owning the process under which it is running
+    Thrown when an Identifier repository detects that the user owning the process under which it is running
     is not the same as the owner of the file structure it is using for storage.
     """
 
     def __init__(self, data_owner: str, pid_user: str):
         super().__init__(
-            message=f"The IdRepository's process is running under an invalid account. "
+            message=f"The UuidRepository's process is running under an invalid account. "
             f"Owner: {data_owner} User: {pid_user} ",
             error_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         )

@@ -32,7 +32,7 @@ os.environ["ROOT_LOG_LEVEL"] = "INFO"
 
 
 from co.deability.identifier import api
-from co.deability.identifier.api.repositories.id_repository import IdRepository
+from co.deability.identifier.api.repositories.uuid_repository import UuidRepository
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType
 
 # turn on debug-level logging for tests
@@ -68,10 +68,16 @@ def http_client():
 
 
 @pytest.fixture
-def mock_id_repository_writer():
-    return IdRepository(repository_type=IdRepositoryType.WRITER, base_path=test_path)
+def setup_entity_repository():
+    deleted_path = Path(test_path, "deleted_entity.json")
+    deleted_path.write_text("{}")
 
 
 @pytest.fixture
-def mock_id_repository_reader():
-    return IdRepository(repository_type=IdRepositoryType.READER, base_path=test_path)
+def mock_uuid_repository_writer():
+    return UuidRepository(repository_type=IdRepositoryType.WRITER, base_path=test_path)
+
+
+@pytest.fixture
+def mock_uuid_repository_reader():
+    return UuidRepository(repository_type=IdRepositoryType.READER, base_path=test_path)
