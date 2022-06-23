@@ -19,18 +19,19 @@ ARG uuid
 ARG identifier_data_path
 ARG build_id
 ARG flask_env
+ARG cert_subj
 
 ENV IDENTIFIER_DATA_PATH=$identifier_data_path
 ENV BUILD_ID=$build_id
 ENV FLASK_ENV=$flask_env
 ENV VIRTUAL_ENV=.venv
-ENV ROOT_LOG_LEVEL=INFO
+ENV ROOT_LOG_LEVEL=DEBUG
 
 RUN apt-get update
 RUN apt-get install -y nginx supervisor openssl
 
 RUN groupadd -g $guid api-service \
-    && useradd -d /service/identifier -s /bin/bash -u $uuid -g $guid api-service \
+    && useradd --no-log-init -d /service/identifier -s /bin/bash -u $uuid -g $guid api-service \
     && mkdir -p /service/identifier \
     && mkdir -p /service/identifier/.ssh \
     && mkdir -p $identifier_data_path \
@@ -51,5 +52,5 @@ RUN python -m venv $VIRTUAL_ENV \
 
 ENV PATH=$PATH:$VIRTUAL_ENV/bin
 
-EXPOSE 443
+EXPOSE 4336
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/service/identifier/supervisord.conf"]

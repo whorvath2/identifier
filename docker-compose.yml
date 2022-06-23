@@ -50,6 +50,6 @@ volumes:
 
 secrets:
   server_certificate_key:
-    file: ${TLS_KEY}
+    file: ${$IDENTIFIER_CERT_KEY_FILE}
   server_certificate:
-    file: ${TLS_CERT}
+    file: ${$IDENTIFIER_CERT_PUB_FILE}

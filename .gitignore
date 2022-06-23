@@ -23,7 +23,8 @@ dist/
 out/
 identifier_api.egg-info/
 .env
-.env_dev
+.dev_env
+.identifier_env
 build/
 .idea/
 *.crt
