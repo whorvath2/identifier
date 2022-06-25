@@ -17,6 +17,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from co.deability.identifier import config
+from co.deability.identifier.api.controllers.entity_controller import entity_blueprint
 from co.deability.identifier.api.controllers.id_controller import id_blueprint
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
 from co.deability.identifier.errors.IdentifierError import IdentifierError
@@ -45,6 +46,7 @@ def _register_error_handlers(app) -> None:
 
 def _register_blueprints(app) -> None:
     app.register_blueprint(id_blueprint)
+    app.register_blueprint(entity_blueprint)
 
 
 def _initialize_data_store() -> None:

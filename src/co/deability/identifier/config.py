@@ -51,6 +51,7 @@ if not _data_path:
         explanation="The IDENTIFIER_DATA_PATH environment variable is not set."
     )
 DATA_PATH: Final[Path] = Path(_data_path).absolute()
+SCHEMA_PATH: Final[Path] = Path(Path.home(), "schema")
 LOG.info(f"Constructing data path {DATA_PATH}")
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))

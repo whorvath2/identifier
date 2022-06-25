@@ -42,9 +42,10 @@ TIME_LENGTH: Final[int] = 12
 DATA_FILE: Final[str] = ".json"
 
 
-@cache
 def calculate_identifier(identifier_path: Path) -> str:
     identifier_path = identifier_path.absolute()
+    if not identifier_path.is_dir:
+        identifier_path = identifier_path.parent
     if not identifier_path.is_relative_to(BASE_PATH):
         raise IllegalArgumentError(
             message="The path cannot be parsed because it is not relative to BASE_PATH"
@@ -55,7 +56,6 @@ def calculate_identifier(identifier_path: Path) -> str:
     return identifier
 
 
-@cache
 def calculate_path(identifier: str) -> Path:
     """
     Returns a file path for a directory derived from this instance's base_path and the
@@ -101,7 +101,6 @@ def create_identifier_path(identifier: str) -> Path:
     return file_path
 
 
-@cache
 def identifier_exists(identifier: str) -> bool:
     """
     Returns True if the supplied identifier already exists in this instance's repository;
@@ -119,7 +118,6 @@ def identifier_exists(identifier: str) -> bool:
     return path.exists(file_path)
 
 
-@cache
 def is_valid_identifier(identifier: str) -> bool:
     """
     Returns True if the supplied identifier is not None, composed entirely of valid characters,
@@ -136,7 +134,6 @@ def is_valid_identifier(identifier: str) -> bool:
     return True
 
 
-@cache
 def check_identifier(identifier: str) -> None:
     """
     Raises an error if the supplied identifier is not valid or does not exist; otherwise has no effect.
