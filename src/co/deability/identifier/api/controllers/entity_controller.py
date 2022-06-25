@@ -1,9 +1,24 @@
+"""
+Copyright © 2021 William L Horvath II
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 from http import HTTPStatus
 
-from co.deability.identifier.api.repositories.entities import entity_repository
+from flask import Blueprint, jsonify, make_response, request, Response
+
 from co.deability.identifier.api.services import entity_service
 from co.deability.identifier.services.validator_service import validate_entity
-from flask import Blueprint, jsonify, make_response, request, Response
 
 entity_blueprint: Blueprint = Blueprint(
     "entity", __name__, url_prefix="/identifier/entity"
