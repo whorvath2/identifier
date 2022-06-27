@@ -39,6 +39,7 @@ from co.deability.identifier.api.repositories.id_repository_type import IdReposi
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
 ACCEPT_JSON_HEADERS: Final[dict[str]] = {"Accept": "application/json"}
+JSON_CONTENT_HEADERS: Final[dict[str]] = {"Content-Type": "application/json"}
 
 
 def pytest_runtest_setup(item):

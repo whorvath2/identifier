@@ -35,7 +35,6 @@ def find_entity_path(identifier: str) -> Optional[Path]:
 
 
 def create_entity(entity: Dict[str, Any]) -> str:
-    entities.check_if_empty(data=entity)
     identifier: str = entities.calculate_id_from_data(data=entity)
     identifier_path: Path = repositories.create_identifier_path(identifier=identifier)
     new_data_path: Path = entities.calculate_new_data_path(
@@ -47,7 +46,6 @@ def create_entity(entity: Dict[str, Any]) -> str:
 
 
 def read_entity(identifier: str) -> Optional[Dict[str, Any]]:
-    repositories.check_identifier(identifier=identifier)
     entity_file: Path = find_entity_path(identifier=identifier)
     result = (
         json.loads(entity_file.read_text(encoding=config.TEXT_ENCODING))
@@ -78,8 +76,6 @@ def update_entity(identifier: str, entity: Dict[str, Any]) -> str:
     :param entity:
     :return:
     """
-    repositories.check_identifier(identifier)
-    entities.check_if_empty(data=entity)
     new_identifier: str = entities.calculate_id_from_data(data=entity)
     old_data_path: Path = find_entity_path(identifier=identifier)
     if not old_data_path:
@@ -113,7 +109,6 @@ def update_entity(identifier: str, entity: Dict[str, Any]) -> str:
 
 
 def delete_entity(identifier: str) -> None:
-    repositories.check_identifier(identifier=identifier)
     entity_path: Path = find_entity_path(identifier=identifier)
     if not entity_path:
         raise NoSuchEntityError(

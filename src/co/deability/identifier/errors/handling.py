@@ -15,19 +15,20 @@ limitations under the License.
 """
 import inspect
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, List
 
 from flask import Response, make_response, jsonify
 from werkzeug.exceptions import InternalServerError
 
+from co.deability.identifier import config
 from co.deability.identifier.errors.IdentifierError import IdentifierError
 from co.deability.identifier.errors.ImpossibleError import ImpossibleError
 from co.deability.identifier.config import LOG
 
 
 def handle_assertion_errors(assertion_error: AssertionError) -> Response:
-    if __debug__:
-        frame = inspect.currentframe()
+    if config.debug:
+        stack: List[inspect.FrameInfo] = inspect.stack()
         internal_message: str = (
             f"Assertion error raised in {stack[1].function} after call from "
             f"{stack[2].function}"
@@ -48,16 +49,17 @@ def handle_assertion_errors(assertion_error: AssertionError) -> Response:
 
 def handle_identifier_errors(error: IdentifierError) -> Response:
     if isinstance(error, ImpossibleError):
-        if __debug__:
+        if config.debug:
             LOG.error(
                 f"Coding error caught in {error}",
-                exc_info=acrs_error,
+                exc_info=error,
                 stack_info=True,
             )
         else:
+            stack: List[inspect.FrameInfo] = inspect.stack()
             LOG.error(
-                f"Internal error raised in {inspect.stack()[1].function} after call "
-                f"from {inspect.stack()[2].function}",
+                f"Internal error raised in {stack[1].function} after call "
+                f"from {stack[2].function}",
                 stack_info=False,
             )
         result = {

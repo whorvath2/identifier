@@ -42,7 +42,7 @@ def create_index(identifier: str, index: Dict[str, Any]) -> None:
     index_identifier_path: Path = (
         repositories.create_identifier_path(identifier=index_identifier)
         if not entities.find_identifier(data=index)
-        else repositories.calculate_path(identifer=index_identifier)
+        else repositories.calculate_path(identifier=index_identifier)
     )
     new_data_path: Path = entities.calculate_new_data_path(
         identifier_path=index_identifier_path
@@ -50,12 +50,7 @@ def create_index(identifier: str, index: Dict[str, Any]) -> None:
     new_data_path.symlink_to(target=target_path)
 
 
-def delete_index(index_or_identifier: [str, Dict[str, Any]]) -> None:
-    index_identifier: str = (
-        index_or_identifier
-        if isinstance(index_or_identifier, str)
-        else _get_index_identifier_path(index=index_or_identifier)
-    )
+def delete_index(index_identifier: [str]) -> None:
     index_identifier_paths: Iterator[Path] = entities.get_data_file_paths(
         identifier=index_identifier
     )
@@ -72,10 +67,10 @@ def delete_index(index_or_identifier: [str, Dict[str, Any]]) -> None:
 
 def find_entity_ids(index: Dict[str, Any]) -> List[str]:
     found_entity_ids: List[str] = []
-    entity_paths = _get_entity_paths(index=index)
+    entity_paths: List[Path] = _get_entity_paths(index=index)
     for entity_path in entity_paths:
         found_entity_ids.append(
-            repositories.calculate_identifier(identifier_path=entity_path)
+            repositories.calculate_identifier(identifier_path=entity_path.resolve())
         )
     return found_entity_ids
 
@@ -95,7 +90,7 @@ def _get_index_identifier_path(index: Dict[str, Any]) -> Optional[Path]:
         raise BadRequestError("The index terms cannot be empty.")
     index_identifier: str = entities.calculate_id_from_data(data=index)
     index_identifier_path: Path = repositories.calculate_path(
-        identifer=index_identifier
+        identifier=index_identifier
     )
     return index_identifier_path if index_identifier_path.exists() else None
 

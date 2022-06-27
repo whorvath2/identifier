@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from http import HTTPStatus
+from typing import Final, Tuple
 
 from flask import Blueprint, jsonify, make_response, request, Response
 
@@ -24,8 +25,10 @@ entity_blueprint: Blueprint = Blueprint(
     "entity", __name__, url_prefix="/identifier/entity"
 )
 
+EMPTY_SUCCESS_RESPONSE: Final[Tuple[str, int]] = ("", HTTPStatus.NO_CONTENT)
 
-@entity_blueprint.get("/read/{identifier}")
+
+@entity_blueprint.get("/read/<identifier>")
 def get_entity(identifier: str):
     return make_response(
         entity_service.get_entity(identifier=identifier), HTTPStatus.OK
@@ -33,7 +36,7 @@ def get_entity(identifier: str):
 
 
 @validate_entity
-@entity_blueprint.post("/add/{entity_type}")
+@entity_blueprint.post("/add/<entity_type>")
 def add_entity(entity_type: str) -> Response:
     return make_response(
         jsonify(entity_service.add_entity(entity=request.json)),
@@ -41,14 +44,14 @@ def add_entity(entity_type: str) -> Response:
     )
 
 
-@entity_blueprint.post("/archive/{identifier}")
+@entity_blueprint.delete("/archive/<identifier>")
 def remove_entity(identifier: str) -> Response:
     entity_service.remove_entity(identifier=identifier)
-    return make_response(HTTPStatus.NO_CONTENT)
+    return make_response(EMPTY_SUCCESS_RESPONSE)
 
 
 @validate_entity
-@entity_blueprint.post("/update/{identifier}")
+@entity_blueprint.put("/update/<identifier>")
 def update_entity(identifier: str) -> Response:
     return make_response(
         jsonify(
@@ -59,27 +62,29 @@ def update_entity(identifier: str) -> Response:
 
 
 @validate_entity
-@entity_blueprint.post("/index/add/{identifier}")
+@entity_blueprint.post("/index/add/<identifier>")
 def add_index(identifier: str) -> Response:
     entity_service.add_search_terms(identifier=identifier, search_terms=request.json)
-    return make_response(HTTPStatus.NO_CONTENT)
+    return make_response(EMPTY_SUCCESS_RESPONSE)
 
 
-@entity_blueprint.delete("/index/remove/{index_identifier}")
-def remove_index(index_identifier: str) -> Response:
-    entity_service.remove_search_index(index_identifier=index_identifier)
-    return make_response(HTTPStatus.NO_CONTENT)
+@entity_blueprint.delete("/index/remove")
+def remove_index() -> Response:
+    entity_service.remove_search_terms(search_terms=request.json)
+    return make_response(EMPTY_SUCCESS_RESPONSE)
 
 
-@entity_blueprint.get("/search/entities")
+@entity_blueprint.get("/search")
 def find_entities() -> Response:
-    return jsonify(
-        entity_service.search_for_entities(index_terms=request.json), HTTPStatus.OK
+    return make_response(
+        jsonify(entity_service.search_for_entities(search_terms=request.json)),
+        HTTPStatus.OK,
     )
 
 
-@entity_blueprint.get("/search/entities/ids")
+@entity_blueprint.get("/search/ids")
 def find_entity_identifiers() -> Response:
-    return jsonify(
-        entity_service.search_for_entity_ids(index_terms=request.json), HTTPStatus.OK
+    return make_response(
+        jsonify(entity_service.search_for_entity_ids(search_terms=request.json)),
+        HTTPStatus.OK,
     )

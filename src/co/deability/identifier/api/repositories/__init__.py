@@ -44,7 +44,7 @@ DATA_FILE: Final[str] = ".json"
 
 def calculate_identifier(identifier_path: Path) -> str:
     identifier_path = identifier_path.absolute()
-    if not identifier_path.is_dir:
+    if not identifier_path.is_dir():
         identifier_path = identifier_path.parent
     if not identifier_path.is_relative_to(BASE_PATH):
         raise IllegalArgumentError(
