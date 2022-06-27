@@ -13,4 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-# from co.deability.identifier import config
+import os
+import subprocess
+from typing import List
+
+tag_str: str = str(
+    subprocess.run(["git", "tag"], capture_output=True, text=True).stdout
+)
+
+if tag_str:
+    tags: List[str] = tag_str.split("\n")
+    tags.reverse()
+    __version__ = tags[0]
+else:
+    __version__ = os.environ.get("IDENTIFIER_VERSION", "N/A")

@@ -15,13 +15,28 @@ limitations under the License.
 """
 import os
 import logging
+import subprocess
 from datetime import timezone
 from pathlib import Path
 from typing import Final
 from co.deability.identifier.errors.EnvironmentError import EnvironmentError
 
-# INFO
-BUILD_ID: Final[str] = os.environ.get("BUILD_ID", "N/A")
+debug: bool = __debug__
+
+# BUILD INFO
+commit = "N/A"
+try:
+    commit: str = str(
+        subprocess.run(["git", "rev-parse", "@"], capture_output=True, text=True).stdout
+    )
+    if commit:
+        commit = commit[0:8]
+except FileNotFoundError:
+    # No git. Meh.
+    ...
+
+BUILD_ID: Final[str] = os.environ.get("BUILD_ID", commit)
+
 
 # LOGGING CONFIG
 ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
@@ -51,12 +66,16 @@ if not _data_path:
         explanation="The IDENTIFIER_DATA_PATH environment variable is not set."
     )
 DATA_PATH: Final[Path] = Path(_data_path).absolute()
-SCHEMA_PATH: Final[Path] = Path(Path.home(), "schema")
 LOG.info(f"Constructing data path {DATA_PATH}")
 DATA_PATH.mkdir(parents=True, exist_ok=True)
+SCHEMA_PATH: Final[Path] = Path(Path.home(), "schema")
 MAX_READER_COUNT: int = int(os.environ.get("IDENTIFIER_MAX_READER_COUNT", 1))
 MAX_WRITE_RETRIES: int = int(os.environ.get("IDENTIFIER_MAX_RETRIES", 0))
 IDENTIFIER_LENGTH: int = int(os.environ.get("IDENTIFIER_ID_LENGTH", 32))
+if IDENTIFIER_LENGTH > 128 or IDENTIFIER_LENGTH <= 16:
+    raise EnvironmentError(
+        "The IDENTIFIER_ID_LENGTH must be between 16 and 128 (inclusive.)"
+    )
 
 # OTHER CONFIG
 TIMEZONE: timezone = timezone.utc
@@ -80,6 +99,8 @@ LOG.debug(
             "MAX_READER_COUNT": MAX_READER_COUNT,
             "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
             "TEXT_ENCODING": TEXT_ENCODING,
+            "TIMEZONE": TIMEZONE,
+            "BUILD_ID": BUILD_ID,
         }
     )
 )
