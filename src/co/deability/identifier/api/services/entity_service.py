@@ -66,3 +66,21 @@ def search_for_entities(search_terms: Dict[str, Any]) -> List[Dict[str, Any]]:
 def search_for_entity_ids(search_terms: Dict[str, Any]) -> List[str]:
     entities.check_if_empty(data=search_terms)
     return index_repository.find_entity_ids(index=search_terms)
+
+
+def add_schema(schema: Dict[str, Any], name: str) -> None:
+    entities.check_schema(schema=schema)
+    entity_repository.add_schema(schema=schema, name=name)
+
+
+def remove_schema(name: str) -> None:
+    entity_repository.remove_schema(name=name)
+
+
+def update_schema(schema: Dict[str, Any], name: str) -> None:
+    entities.check_schema(schema=schema)
+    entity_repository.update_schema(schema=schema, name=name)
+
+
+def get_schema(name: str = None) -> Dict[str, Any]:
+    return entity_repository.get_schema(name=name)

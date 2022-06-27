@@ -15,7 +15,13 @@ limitations under the License.
 """
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+
+from co.deability.identifier.errors.NoSuchSchemaError import NoSuchSchemaError
+from co.deability.identifier.errors.SchemaAlreadyExistsError import (
+    SchemaAlreadyExistsError,
+)
+from co.deability.identifier.services import validator_service
 
 from co.deability.identifier import config
 from co.deability.identifier.api import repositories
@@ -131,6 +137,39 @@ def does_entity_exist(id_or_entity: [str, Dict[str, Any]]):
         else entities.calculate_id_from_data(data=id_or_entity)
     )
     return read_entity(identifier=identifier) is not None
+
+
+def add_schema(schema: Dict[str, Any], name: str) -> None:
+    content = json.dumps(schema)
+    path = Path(config.SCHEMA_PATH, f"{name.lower()}.json")
+    if path.exists():
+        raise SchemaAlreadyExistsError(name=name)
+    path.write_text(data=content, encoding=config.TEXT_ENCODING)
+
+
+def update_schema(schema: Dict[str, Any], name: str) -> None:
+    content = json.dumps(schema)
+    path = Path(config.SCHEMA_PATH, f"{name.lower()}.json")
+    if not path.exists():
+        raise NoSuchSchemaError()
+    path.write_text(data=content, encoding=config.TEXT_ENCODING)
+
+
+def remove_schema(name: str) -> None:
+    path = Path(config.SCHEMA_PATH, f"{name.lower()}.json")
+    if not path.exists():
+        raise NoSuchSchemaError()
+    path.unlink(missing_ok=True)
+
+
+def get_schema(name: Optional[str] = None) -> Dict[str, Any]:
+    known_schema = validator_service.known_schema()
+    if not name:
+        return known_schema
+    schema = known_schema.get(name.lower())
+    if not schema:
+        raise NoSuchSchemaError()
+    return {name: schema}
 
 
 def _link_last(first_path: Path, target_path: Path):

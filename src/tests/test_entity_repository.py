@@ -16,6 +16,7 @@ limitations under the License.
 import json
 
 import pytest
+from co.deability.identifier.services import validator_service
 
 from co.deability.identifier.api import repositories
 from co.deability.identifier.api.repositories import entities
@@ -126,3 +127,37 @@ def test_deletes_entity(setup_entity_repository):
     assert data_path.readlink()
     assert data_path.exists(), f"{data_path}"
     assert json.loads(data_path.read_text()) == expected
+
+
+def test_adds_and_removes_schema(setup_entity_repository):
+    name = "a_schema"
+    schema = {"type": "object", "properties": {"fizzbuzz": {"type": "string"}}}
+    entity_repository.add_schema(schema=schema, name=name)
+    known_schema = validator_service.known_schema()
+    assert known_schema.get(name) == schema
+    entity_repository.remove_schema(name=name)
+    assert entity_repository.get_schema().get(name) == None
+
+
+def test_updates_schema(setup_entity_repository):
+    name = "a_schema"
+    schema = {"type": "object", "properties": {"fizzbuzz": {"type": "string"}}}
+    entity_repository.add_schema(schema=schema, name=name)
+    new_schema = {"type": "object", "properties": {"foobar": {"type": "string"}}}
+    entity_repository.update_schema(schema=new_schema, name=name)
+    known_schema = validator_service.known_schema()
+    assert known_schema.get(name) == new_schema
+
+
+def test_gets_schema_by_name_and_gets_all_schema(setup_entity_repository):
+    name = "a_schema"
+    schema = {"type": "object", "properties": {"fizzbuzz": {"type": "string"}}}
+    entity_repository.add_schema(schema=schema, name=name)
+    new_name = "another_schema"
+    new_schema = {"type": "object", "properties": {"foobar": {"type": "string"}}}
+    entity_repository.add_schema(schema=new_schema, name=new_name)
+    assert entity_repository.get_schema(name=new_name) == {new_name: new_schema}
+    assert entity_repository.get_schema(name=name) == {name: schema}
+    all_schema = entity_repository.get_schema()
+    assert all_schema.get(name) == schema
+    assert all_schema.get(new_name) == new_schema

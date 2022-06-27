@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Dict
+from typing import Dict, Any, Optional
 
 from co.deability.identifier.api.app import app
 from conftest import ACCEPT_JSON_HEADERS, JSON_CONTENT_HEADERS
@@ -10,6 +10,14 @@ ENTITY: Dict[str, str] = {"foo": "bar"}
 UPDATED_ENTITY: Dict[str, str] = {"fizz": "buzz"}
 SECOND_ENTITY: Dict[str, str] = {"hello": "world"}
 SEARCH_TERMS: Dict[str, str] = {"findby": "foo"}
+SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "properties": {"fizzbuzz": {"type": "string"}},
+}
+UPDATED_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "properties": {"foobar": {"type": "string"}},
+}
 
 
 def _add_entity(entity=None, second_run: bool = False):
@@ -117,7 +125,7 @@ def test_remove_search_terms(setup_entity_repository):
     entity_id = _add_entity()
     _add_search_terms(identifier=entity_id)
     with app.test_client() as client:
-        endpoint = f"{ROOT_DIR}/index/remove"
+        endpoint = f"{ROOT_DIR}/index/delete"
         response = client.delete(
             endpoint,
             headers=ACCEPT_JSON_HEADERS | JSON_CONTENT_HEADERS,
@@ -175,3 +183,61 @@ def test_add_one_search_terms_to_two_entities():
     search_result = _run_search()
     assert search_result.index(ENTITY) >= 0
     assert search_result.index(SECOND_ENTITY) >= 0
+
+
+def _add_schema(name: str):
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/schema/add/{name}"
+        response = client.post(
+            endpoint,
+            headers=ACCEPT_JSON_HEADERS | JSON_CONTENT_HEADERS,
+            data=json.dumps(SCHEMA),
+        )
+        return response
+
+
+def _get_schema(name: str):
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/schema/read/{name}"
+        response = client.get(
+            endpoint,
+            headers=ACCEPT_JSON_HEADERS,
+        )
+        return response
+
+
+def _remove_schema(name: str):
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/schema/delete/{name}"
+        response = client.delete(
+            endpoint,
+            headers=ACCEPT_JSON_HEADERS,
+        )
+        return response
+
+
+def test_add_and_remove_schema(setup_entity_repository):
+    name = "a_schema"
+    response = _add_schema(name=name)
+    assert response.status_code == HTTPStatus.NO_CONTENT
+    response = _get_schema(name=name)
+    assert response.json == {name: SCHEMA}
+    response = _remove_schema(name=name)
+    assert response.status_code == HTTPStatus.NO_CONTENT
+    response = _get_schema(name=name)
+    assert response.status_code == 400
+
+
+def test_update_schema(setup_entity_repository):
+    name = "a_schema"
+    _add_schema(name=name)
+    with app.test_client() as client:
+        endpoint = f"{ROOT_DIR}/schema/update/{name}"
+        response = client.put(
+            endpoint,
+            headers=ACCEPT_JSON_HEADERS | JSON_CONTENT_HEADERS,
+            data=json.dumps(UPDATED_SCHEMA),
+        )
+        assert response.status_code == HTTPStatus.NO_CONTENT
+    response = _get_schema(name=name)
+    assert response.json == {name: UPDATED_SCHEMA}

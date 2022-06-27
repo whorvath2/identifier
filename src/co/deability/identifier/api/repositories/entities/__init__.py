@@ -121,6 +121,15 @@ def check_if_empty(data: Optional[Dict[str, Any]]) -> None:
         )
 
 
+def check_schema(schema: Optional[Dict[str, Any]]) -> None:
+    if not schema:
+        raise BadRequestError(message="The schema cannot be empty.")
+    if not schema.get("type") or not schema.get("properties"):
+        raise BadRequestError(
+            message="The schema is missing a type declaration or a properties declaration."
+        )
+
+
 def _tmp_file() -> str:
     return f"{str(uuid.uuid4())}.tmp"
 

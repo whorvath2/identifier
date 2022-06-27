@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
-from functools import cache
 from pathlib import Path
 from typing import Final
-from os import path
 
 from co.deability.identifier import config
 from co.deability.identifier.errors.BadRepositoryError import BadRepositoryError
@@ -115,7 +113,7 @@ def identifier_exists(identifier: str) -> bool:
     otherwise.
     """
     file_path: Path = calculate_path(identifier=identifier)
-    return path.exists(file_path)
+    return file_path.exists()
 
 
 def is_valid_identifier(identifier: str) -> bool:

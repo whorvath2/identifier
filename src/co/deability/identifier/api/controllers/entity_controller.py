@@ -68,7 +68,7 @@ def add_index(identifier: str) -> Response:
     return make_response(EMPTY_SUCCESS_RESPONSE)
 
 
-@entity_blueprint.delete("/index/remove")
+@entity_blueprint.delete("/index/delete")
 def remove_index() -> Response:
     entity_service.remove_search_terms(search_terms=request.json)
     return make_response(EMPTY_SUCCESS_RESPONSE)
@@ -88,3 +88,31 @@ def find_entity_identifiers() -> Response:
         jsonify(entity_service.search_for_entity_ids(search_terms=request.json)),
         HTTPStatus.OK,
     )
+
+
+@entity_blueprint.get("/schema")
+def get_all_schema():
+    return make_response(jsonify(entity_service.get_schema()), HTTPStatus.OK)
+
+
+@entity_blueprint.get("/schema/read/<name>")
+def get_schema(name: str):
+    return make_response(jsonify(entity_service.get_schema(name=name)), HTTPStatus.OK)
+
+
+@entity_blueprint.post("/schema/add/<name>")
+def add_schema(name: str):
+    entity_service.add_schema(schema=request.json, name=name)
+    return make_response(EMPTY_SUCCESS_RESPONSE)
+
+
+@entity_blueprint.delete("/schema/delete/<name>")
+def remove_schema(name: str):
+    entity_service.remove_schema(name=name)
+    return make_response(EMPTY_SUCCESS_RESPONSE)
+
+
+@entity_blueprint.put("/schema/update/<name>")
+def update_schema(name: str):
+    entity_service.update_schema(schema=request.json, name=name)
+    return make_response(EMPTY_SUCCESS_RESPONSE)

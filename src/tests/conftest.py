@@ -45,6 +45,8 @@ JSON_CONTENT_HEADERS: Final[dict[str]] = {"Content-Type": "application/json"}
 def pytest_runtest_setup(item):
     print(f"Constructing temporary path {test_path}...")
     test_path.mkdir(parents=True, exist_ok=True)
+    schema_path = Path(test_path, "schema")
+    schema_path.mkdir(parents=True, exist_ok=True)
 
 
 def pytest_runtest_teardown(item):
