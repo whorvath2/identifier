@@ -225,7 +225,7 @@ def test_add_and_remove_schema(setup_entity_repository):
     response = _remove_schema(name=name)
     assert response.status_code == HTTPStatus.NO_CONTENT
     response = _get_schema(name=name)
-    assert response.status_code == 400
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_update_schema(setup_entity_repository):

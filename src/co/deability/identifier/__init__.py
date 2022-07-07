@@ -17,13 +17,15 @@ import os
 import subprocess
 from typing import List
 
-tag_str: str = str(
-    subprocess.run(["git", "tag"], capture_output=True, text=True).stdout
-)
+__version__ = "0.7.2"
 
-if tag_str:
-    tags: List[str] = tag_str.split("\n")
-    tags.reverse()
-    __version__ = tags[0]
-else:
-    __version__ = os.environ.get("IDENTIFIER_VERSION", "N/A")
+# tag_str: str = str(
+#     subprocess.run(["git", "tag"], capture_output=True, text=True).stdout
+# )
+#
+# if tag_str:
+#     tags: List[str] = tag_str.split("\n")
+#     tags.reverse()
+#     __version__ = tags[0]
+
+assert __version__

@@ -25,4 +25,4 @@ class NoSuchEntityError(IdentifierError):
     """
 
     def __init__(self, message: str):
-        super().__init__(message=message, error_code=HTTPStatus.BAD_REQUEST)
+        super().__init__(message=message, error_code=HTTPStatus.NOT_FOUND)

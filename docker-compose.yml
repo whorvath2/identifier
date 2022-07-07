@@ -39,7 +39,7 @@ services:
         - flask_env=production
         - build_id=${BUILD_ID}
     ports:
-      - "4430:443"
+      - "4336:443"
     container_name: identifier_api
     volumes:
       - identifier_data:${IDENTIFIER_DATA_PATH}
@@ -49,7 +49,7 @@ volumes:
 
 
 secrets:
-  server_certificate_key:
+  cert_ca_pub:
     file: ${$IDENTIFIER_CERT_KEY_FILE}
   server_certificate:
     file: ${$IDENTIFIER_CERT_PUB_FILE}

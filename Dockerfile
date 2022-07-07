@@ -17,18 +17,18 @@ FROM python:3.9
 ARG guid
 ARG uuid
 ARG identifier_data_path
-ARG build_id
-ARG flask_env
-ARG cert_subj
-
-ENV IDENTIFIER_DATA_PATH=$identifier_data_path
-ENV BUILD_ID=$build_id
-ENV FLASK_ENV=$flask_env
-ENV VIRTUAL_ENV=.venv
-ENV ROOT_LOG_LEVEL=DEBUG
 
 RUN apt-get update
 RUN apt-get install -y nginx supervisor openssl
+
+RUN --mount=type=secret,id=identifier_cert_key ln -s /run/secrets/identifier_cert_key /etc/ssl/private/identifier-key.pem
+RUN --mount=type=secret,id=identifier_cert_pub cat /run/secrets/identifier_cert_pub > /etc/ssl/certs/identifier.pem
+RUN --mount=type=secret,id=identifier_cert_ca_pub \
+    cat /run/secrets/identifier_cert_ca_pub > /usr/local/share/ca-certificates/identifier_ca.crt \
+    && chmod 644 /usr/local/share/ca-certificates/identifier_ca.crt \
+    && /usr/sbin/update-ca-certificates \
+    && ln -s /usr/local/share/ca-certificates/identifier_ca.crt /usr/lib/ssl/certs/identifier_ca.crt \
+    && ln -s /etc/ssl/private/identifier-key.pem /usr/lib/ssl/cert.pem
 
 RUN groupadd -g $guid api-service \
     && useradd --no-log-init -d /service/identifier -s /bin/bash -u $uuid -g $guid api-service \
@@ -43,14 +43,16 @@ COPY . /service/identifier
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 
+ENV VIRTUAL_ENV=.venv
 RUN python -m venv $VIRTUAL_ENV \
     && $VIRTUAL_ENV/bin/python -m pip install --upgrade pip \
     && $VIRTUAL_ENV/bin/pip install setuptools \
     && $VIRTUAL_ENV/bin/pip install build \
     && $VIRTUAL_ENV/bin/python -m build --wheel -o ./ \
-    && $VIRTUAL_ENV/bin/pip install ./*.whl
+    && $VIRTUAL_ENV/bin/pip install ./*.whl \
+    && $VIRTUAL_ENV/bin/pip config set global.cert /etc/ssl/certs/ca-certificates.crt
 
 ENV PATH=$PATH:$VIRTUAL_ENV/bin
 
-EXPOSE 4336
+EXPOSE 443
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/service/identifier/supervisord.conf"]

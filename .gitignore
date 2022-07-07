@@ -29,4 +29,5 @@ build/
 .idea/
 *.crt
 *.key
+*.pem
 schema/

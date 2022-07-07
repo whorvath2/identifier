@@ -21,4 +21,4 @@ app: Flask = init_app()
 cors = CORS(app)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=4336)
+    app.run(host="0.0.0.0", port=443)

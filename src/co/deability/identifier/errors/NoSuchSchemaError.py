@@ -20,11 +20,11 @@ from co.deability.identifier.errors.IdentifierError import IdentifierError
 
 class NoSuchSchemaError(IdentifierError):
     """
-    Thrown when an attempt is made to delete or update a schema that doesn't exist.
+    Thrown when an attempt is made to read, delete, or update a schema that doesn't exist.
     """
 
     def __init__(self):
         super().__init__(
             message="There is no known schema with the supplied name.",
-            error_code=HTTPStatus.BAD_REQUEST,
+            error_code=HTTPStatus.NOT_FOUND,
         )
