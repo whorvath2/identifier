@@ -27,7 +27,7 @@ from co.deability.identifier.config import LOG
 
 
 def handle_assertion_errors(assertion_error: AssertionError) -> Response:
-    if config.debug:
+    if config.DEBUG:
         stack: List[inspect.FrameInfo] = inspect.stack()
         internal_message: str = (
             f"Assertion error raised in {stack[1].function} after call from "
@@ -49,7 +49,7 @@ def handle_assertion_errors(assertion_error: AssertionError) -> Response:
 
 def handle_identifier_errors(error: IdentifierError) -> Response:
     if isinstance(error, ImpossibleError):
-        if config.debug:
+        if config.DEBUG:
             LOG.error(
                 f"Coding error caught in {error}",
                 exc_info=error,

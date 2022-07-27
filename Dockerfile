@@ -21,8 +21,10 @@ ARG identifier_data_path
 RUN apt-get update
 RUN apt-get install -y nginx supervisor openssl
 
-RUN --mount=type=secret,id=identifier_cert_key ln -s /run/secrets/identifier_cert_key /etc/ssl/private/identifier-key.pem
-RUN --mount=type=secret,id=identifier_cert_pub cat /run/secrets/identifier_cert_pub > /etc/ssl/certs/identifier.pem
+RUN --mount=type=secret,id=identifier_cert_key \
+    ln -s /run/secrets/identifier_cert_key /etc/ssl/private/identifier-key.pem
+RUN --mount=type=secret,id=identifier_cert_pub \
+    cat /run/secrets/identifier_cert_pub > /etc/ssl/certs/identifier.pem
 RUN --mount=type=secret,id=identifier_cert_ca_pub \
     cat /run/secrets/identifier_cert_ca_pub > /usr/local/share/ca-certificates/identifier_ca.crt \
     && chmod 644 /usr/local/share/ca-certificates/identifier_ca.crt \

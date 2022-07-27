@@ -15,28 +15,18 @@ limitations under the License.
 """
 import os
 import logging
-import subprocess
 from datetime import timezone
 from pathlib import Path
 from typing import Final
 from co.deability.identifier.errors.EnvironmentError import EnvironmentError
+from co.deability.identifier import __version__, __commit__
 
-debug: bool = __debug__
+# MODE OF OPERATION
+DEBUG: Final[bool] = __debug__ and not os.environ.get("FLASK_ENV") == "production"
 
 # BUILD INFO
-commit = "N/A"
-try:
-    commit: str = str(
-        subprocess.run(["git", "rev-parse", "@"], capture_output=True, text=True).stdout
-    )
-    if commit:
-        commit = commit[0:8]
-except FileNotFoundError:
-    # No git. Meh.
-    ...
-
-BUILD_ID: Final[str] = os.environ.get("BUILD_ID", commit)
-
+BUILD_ID: Final[str] = __commit__
+VERSION: Final[str] = __version__
 
 # LOGGING CONFIG
 ROOT_LOG_LEVEL: Final[str] = os.environ.get("ROOT_LOG_LEVEL")
@@ -57,7 +47,6 @@ except ValueError:
         "IDENTIFIER_LOG_LEVEL are set to an unsupported value; use only CRITICAL, FATAL, "
         "ERROR, WARN, WARNING, INFO, or DEBUG."
     )
-
 
 # DATA CONFIG
 _data_path: str = os.environ.get("IDENTIFIER_DATA_PATH")
@@ -91,17 +80,19 @@ except LookupError:
 
 # Report out
 LOG.info("Config loaded")
-LOG.debug(
-    str(
-        {
-            "ROOT_LOG_LEVEL": ROOT_LOG_LEVEL,
-            "APP_LOG_LEVEL": APP_LOG_LEVEL,
-            "DATA_PATH": DATA_PATH,
-            "MAX_READER_COUNT": MAX_READER_COUNT,
-            "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
-            "TEXT_ENCODING": TEXT_ENCODING,
-            "TIMEZONE": TIMEZONE,
-            "BUILD_ID": BUILD_ID,
-        }
+if DEBUG:
+    LOG.debug(
+        str(
+            {
+                "ROOT_LOG_LEVEL": ROOT_LOG_LEVEL,
+                "APP_LOG_LEVEL": APP_LOG_LEVEL,
+                "DATA_PATH": DATA_PATH,
+                "MAX_READER_COUNT": MAX_READER_COUNT,
+                "MAX_WRITE_RETRIES": MAX_WRITE_RETRIES,
+                "TEXT_ENCODING": TEXT_ENCODING,
+                "TIMEZONE": TIMEZONE,
+                "BUILD_ID": BUILD_ID,
+                "VERSION": VERSION,
+            }
+        )
     )
-)

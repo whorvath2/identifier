@@ -14,11 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if [[ -a .env ]]
+then
+  source .env
+fi
+
+
+if [[ -a .dev_env ]]
+then
+  source .dev_env
+fi
+
 podman container stop identifier_api
 podman container rm -f identifier_api
-podman run -d -t \
+podman run \
+--detach \
+--tty \
 --name=identifier_api \
---secret identifier_cert_key,type=mount,target=/etc/ssl/private/identifier.key,mode=0440 \
---secret identifier_cert_pub,type=mount,target=/etc/ssl/certs/identifier.crt,mode=0444 \
---secret identifier_cert_ca_pub,type=mount,target=/usr/local/share/ca-certificates/identifier_ca.crt,mode=0444 \
+--publish=4336:443 \
+--secret identifier_cert_key,type=mount,target=/etc/ssl/private/identifier-key.pem,mode=0400 \
+--secret identifier_cert_pub,type=mount,target=/etc/ssl/certs/identifier.pem,mode=0444 \
+--secret identifier_cert_ca_pub,type=mount,target=/usr/local/share/ca-certificates/identifier_ca.pem,mode=0444 \
 localhost/identifier_api_image:latest

@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import os
 import subprocess
-from typing import List
+from typing import Final
 
-__version__ = "0.7.2"
+__version__: Final[str] = "0.7.2"
 
 # tag_str: str = str(
 #     subprocess.run(["git", "tag"], capture_output=True, text=True).stdout
@@ -29,3 +28,15 @@ __version__ = "0.7.2"
 #     __version__ = tags[0]
 
 assert __version__
+
+commit = "N/A"
+try:
+    commit: str = str(
+        subprocess.run(["git", "rev-parse", "@"], capture_output=True, text=True).stdout
+    )
+    if commit:
+        commit = commit[0:8]
+except FileNotFoundError:
+    # No git. Meh.
+    ...
+__commit__: Final[str] = commit

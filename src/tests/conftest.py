@@ -30,7 +30,6 @@ os.environ["IDENTIFIER_DATA_PATH"] = str(test_path)
 os.environ["IDENTIFIER_LOG_LEVEL"] = "DEBUG"
 os.environ["ROOT_LOG_LEVEL"] = "INFO"
 
-
 from co.deability.identifier import api
 from co.deability.identifier.api.repositories.uuid_repository import UuidRepository
 from co.deability.identifier.api.repositories.id_repository_type import IdRepositoryType

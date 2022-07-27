@@ -26,7 +26,7 @@ from co.deability.identifier.errors.UnknownEntityTypeError import UnknownEntityT
 
 def validate_entity(post_func):
     def validator(*args, **kwargs):
-        if config.debug:
+        if config.DEBUG:
             return post_func(*args, **kwargs)
         entity: Dict[str, Any] = request.json
         if not entity:

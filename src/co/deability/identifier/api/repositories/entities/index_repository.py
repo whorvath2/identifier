@@ -15,7 +15,7 @@ limitations under the License.
 """
 import json
 from pathlib import Path
-from typing import Dict, Any, List, Generator, Optional, Iterator
+from typing import Dict, Any, List, Optional, Iterator
 
 from co.deability.identifier import config
 from co.deability.identifier.api import repositories
@@ -75,13 +75,16 @@ def find_entity_ids(index: Dict[str, Any]) -> List[str]:
     return found_entity_ids
 
 
-def find_entities(index: Dict[str, Any]) -> List[Dict[str, Any]]:
-    found_entities: List[Dict[str, Any]] = []
+def find_entities(index: Dict[str, Any]) -> Dict[str, Any]:
+    found_entities: Dict[str, Any] = {}
     entity_paths = _get_entity_paths(index=index)
     for entity_path in entity_paths:
         entity = json.loads(entity_path.read_text(encoding=config.TEXT_ENCODING))
         if entity:
-            found_entities.append(entity)
+            identifier: str = repositories.calculate_identifier(
+                identifier_path=entity_path.resolve()
+            )
+            found_entities.update({identifier: entity})
     return found_entities
 
 

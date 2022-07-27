@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from co.deability.identifier.api.app import app
 from conftest import ACCEPT_JSON_HEADERS, JSON_CONTENT_HEADERS
@@ -83,7 +83,7 @@ def _run_search():
         assert response.status_code == HTTPStatus.OK
         if response.is_json:
             return response.json
-        return []
+        return {}
 
 
 def test_add_entity():
@@ -132,13 +132,13 @@ def test_remove_search_terms(setup_entity_repository):
             data=json.dumps(SEARCH_TERMS),
         )
         assert response.status_code == HTTPStatus.NO_CONTENT
-    assert _run_search() == []
+    assert _run_search() == {}
 
 
 def test_find_entities_by_search_terms():
     entity_id = _add_entity()
     _add_search_terms(identifier=entity_id)
-    assert _run_search()[0] == ENTITY
+    assert _run_search().get(entity_id) == ENTITY
 
 
 def test_find_entity_identifiers_by_search_terms():
@@ -158,15 +158,15 @@ def test_find_entity_identifiers_by_search_terms():
 def test_find_by_search_terms_after_entity_updated():
     entity_id = _add_entity()
     _add_search_terms(identifier=entity_id)
-    _update_entity(identifier=entity_id)
-    assert _run_search()[0] == UPDATED_ENTITY
+    updated_id = _update_entity(identifier=entity_id)
+    assert _run_search().get(updated_id) == UPDATED_ENTITY
 
 
 def test_find_by_search_terms_against_updated_entity():
     entity_id = _add_entity()
     updated_id = _update_entity(identifier=entity_id)
     _add_search_terms(identifier=updated_id)
-    assert _run_search()[0] == UPDATED_ENTITY
+    assert _run_search().get(updated_id) == UPDATED_ENTITY
 
 
 def test_cannot_add_entity_twice():
@@ -181,8 +181,8 @@ def test_add_one_search_terms_to_two_entities():
     another_id = _add_entity(entity=SECOND_ENTITY)
     _add_search_terms(identifier=another_id)
     search_result = _run_search()
-    assert search_result.index(ENTITY) >= 0
-    assert search_result.index(SECOND_ENTITY) >= 0
+    assert search_result.get(entity_id) == ENTITY
+    assert search_result.get(another_id) == SECOND_ENTITY
 
 
 def _add_schema(name: str):

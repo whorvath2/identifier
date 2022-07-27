@@ -58,7 +58,7 @@ def remove_search_terms(search_terms: Dict[str, Any]) -> None:
     index_repository.delete_index(index_identifier=index_identifier)
 
 
-def search_for_entities(search_terms: Dict[str, Any]) -> List[Dict[str, Any]]:
+def search_for_entities(search_terms: Dict[str, Any]) -> Dict[str, Any]:
     entities.check_if_empty(data=search_terms)
     return index_repository.find_entities(index=search_terms)
 

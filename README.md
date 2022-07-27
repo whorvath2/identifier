@@ -1,78 +1,172 @@
 # Identifier
 
-A python project to provide identifiers as a service.
+An API to provide entity identifiers and user-defined search indexing as a service.
 
-Identifier provides an API by which identifiers can be requested that are guaranteed to be 
-unique within the context of the service instance's backing data store.
+Identifier provides an API by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. The API also allows the client to specify any arbitrary document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
 
 The longer-term goal of this project is to not only provide new unique identifiers, but to accept
 entity data and supply existing identifiers based on identity-matching algorithms that offer the
 client a customizable degree of certainty that those attributes have been matched to an entity 
 already known to the instance.
 
+## Principles of Operation
+
+### Data Storage
+
+Identifier is designed to use a block file system as the data store for the identifiers it generates, with the user-configurable IDENTIFIER_DATA_PATH being the parent directory. Each identifier value is stored as a folder hierarchy when it is generated, such that each character of the identifier is a directory. _E.g._, an identifier value of `foobar` is serialized into the file system at `<IDENTIFIER_DATA_PATH>/f/o/o/b/a/r/`.
+
+The length of the identifiers used in any particular Identifier instance are user-configurable via the environment variable `IDENTIFIER_ID_LENGTH`, which (if specified) must be a value between 16 and 128 inclusive. The default value is 32.
+
+For performance reasons, it is recommended that identifier containers use the file system on the host VM for the backing data store, and that the host VM use direct-attached drives (as opposed to NFS or SMB mounts) for storage.
+
+#### Workflows
+
+The Identifier API is designed to support the following general workflows:
+
+*Entity Creation, Updating, and Deletion*
+
+* POST entity data -> Receive entity identifier + success code
+* UPDATE entity data -> Receive entity identifier + success code
+* DELETE entity data -> Receive success code
+
+*Search Term Creation and Deletion*
+
+* POST entity identifier and search term document -> Receive success code
+* DELETE search term -> Receive success code
+
+*Entity Search*
+
+* GET request with identifier -> Receive entity data + success code
+* GET entity search request with search term document -> Receive list of entity identifiers and entity data + success code
+* GET entity identifier search request with search term document -> Receive list of entity identifiers + success code
+
+In the current release, both entity data and search term data must be JSON documents. This will likely change in a future version of the API.
+
+Identifier stores entities and create identifiers for them that reflect the content of the entity's data; i.e., identifier generation for entities is _deterministic_, rather than random or incremental. If an attempt is made to re-add an entity that is already known to the Identifier instance, an error will be returned.
+
+When an entity is updated, a new identifier for the entity is generated, and the previous data file is replaced with a link to the new entity data file. Subsequent read requests using either the old or new identifier values will both return the same (current) entity data in the response.
+
+Any particular search term can be attached to more than one entity identifier, so that a list of matching entity identifiers (and, optionally, entity data) can be retrieved by that term.
+
+#### Workflow Use Case Example
+
+A healthcare provider wants to use Identifier to store patients, and to be able to find patients by a combination of first name, last name, and birthday. They configure their client to add a patient entity to Identifier, and after receiving that patient's identifier in response, they add a search index for that identifier consisting of that patient's first name, last name, and birthday. They can then submit the same index to retrieve any matching pateint entities:
+
+    REQUEST                                                                 RESPONSE
+
+    POST https://<identifier host>/add/Patient                              202 
+    {                                                                       {
+        "MRN": "0123456789",                                                    "created": "<unique identifier>"
+        "First Name": "William"                                             }
+        ...
+    }                                                                      
+
+    POST https://<identifier host>/index/add/<unique identifier>            200
+    {
+        "First": "William", 
+        "Last": "Horvath", 
+        "Birthday": "01/01/1970"
+    }
+
+    GET https://<identifier host>/search                                    200
+    {                                                                       [{
+        "First": "William",                                                     "<unique identifier>": {  
+        "Last": "Horvath",                                                          {
+        "Birthday": "01/01/1970"                                                        "MRN": "0123456789",
+    }                                                                                   "First Name": "William",
+                                                                                        ...
+                                                                                    },
+                                                                                 },
+                                                                                "<unique identifier 2>": {
+                                                                                    {
+                                                                                        "MRN": "222222222",
+                                                                                        "First Name": "Aimee",
+                                                                                        ...
+                                                                                    }
+                                                                            }]
+
+##### Search Indexing
+
+Identifier can accept any JSON document as a search term for one or more existing entity identifiers. When the user adds a search term and an identifier for an entity to which that term refers, an identifier file for the search term is created which links directly back to the entity file. 
+
+The same search term can be linked to any arbitrary number of already-storied entity identifiers, and those entities or their identifiers can be retrieved by using the search term in the body of subsequent GET requests to the appropriate `search` endpoints.
+
+##### Entity Validation
+
+Identifier supports validation of entities being POSTed for storage by way of user-supplied JSON schema for each entity type. Schema can be created, read, updated, and deleted via corresponding API endpoints that accept the schema and a name for the entity type to which it applies. Once added to an Identifier instance, they will automatically be applied to validate entities of the corresponding type when those entities are added to that instance. When validation fails, the client will receive an error code and informative message indicating that the entity failed validation.
+
 ## Setup
 
 ### Set environment variables
 
-Create a file named `.env` in this project's root directory, and populate it with the following keys and your values:
+The environment variables used by Identifier include the following:
 
-    # zsh
-    export COMPOSE_PROJECT_NAME=identifier_api
-    export COMPOSE_FILE=docker-compose.yml
-    export TLS_KEY=[String; the location of the file containing the key for the web server certificate. 
-                    E.g.: ./identifier.key]
-    export TLS_CERT=[String; the location of the file containing the public web server certificate. 
-                     E.g.: ./identifier.crt]
-    export IDENTIFIER_LOG_LEVEL=[String; Logging level for the identifier app; "DEBUG", "INFO", etc.]
-    export IDENTIFIER_DATA_PATH=[String; Filepath to the directory where identifier's data will be stored]
-    export IDENTIFIER_MAX_READER_COUNT=[Integer; Maximum number of read-only repository instances]
-    export IDENTIFIER_MAX_RETRIES=[Integer; Maximum number of times to retry a write operation]
-    export IDENTIFIER_TEXT_ENCODING=[String; Encoding scheme for text data I/O; default is "utf-8"]
-    export BUILD_ID=[String; Tag for the current build of Identifier; see ./setup.cfg for the version no.]
+    # Required
+    ROOT_LOG_LEVEL = [String; logging level for the runtime environmment; "DEBUG", "INFO", etc.]
+    IDENTIFIER_DATA_PATH = [String; Filepath to the directory where Identifier's data will be stored.]
+    IDENTIFIER_LOG_LEVEL = [String; Logging level for the Identifier app; "DEBUG", "INFO", etc.]
 
-Alternatively, set the environment variables in [docker-compose](docker-compose.yml) by specifying
-their values directly, though this is not a recommended practice for security and portability
-reasons.
+    # Optional
+    IDENTIFIER_MAX_READER_COUNT = [Integer; Maximum number of read-only repository instances; default is 1]
+    IDENTIFIER_MAX_RETRIES = [Integer; Maximum number of times to retry a write operation; default is 0]
+    IDENTIFIER_TEXT_ENCODING = [String; Encoding scheme for text data I/O; default is utf-8]
+    FLASK_ENV = [String; sets Flask's operating mode; legal values are "development" or "production"; default is "production"]
 
-*Suggestion*: use [mkcert](https://github.com/FiloSottile/mkcert) for creating and installing
-certificates suitable for use in development (*not* in production.)
+_Note: The `build.sh` shell script included in this repository expects to source these environment variables from a file called `.env` in the same directory as the script. If you are operating in a development environment, you can also override the default values by re-specifying them in a file named `.dev_env`, which the build script will also source after `.env`. For example:_ 
+    
+    # ./.env:
+    export IDENTIFIER_DATA_PATH="/var/identifier/data"
+    export IDENTIFIER_LOG_LEVEL="INFO"
+    export IDENTIFIER_MAX_READER_COUNT=3
+    export IDENTIFIER_MAX_RETRIES=3
+    export IDENTIFIER_TEXT_ENCODING="utf-8"
+    export ROOT_LOG_LEVEL="INFO"
+    export FLASK_ENV="production"
 
-### Create a virtual environment for Python
+    # ./.dev-env:
+    export IDENTIFIER_DATA_PATH="$HOME/sandbox/data"
+    export IDENTIFIER_LOG_LEVEL="debug"
+    export ROOT_LOG_LEVEL="debug"
+    export FLASK_ENV="development"
+
+### Build Method 1: build.sh
+
+The `build.sh` script can be used to create a podman/docker image suitable for running the Identifier application in a container:
+
+    sh build.sh
+
+### Build Method 2: Manual Build
+
+As with any Flask-based Python application, Identifier can be built from the command line as well.
+
+#### Create and activate a virtual environment for Python
 
     python3 -m venv .venv
-
-### Activate the virtual environment and the identifier environment
-
     source .venv/bin/activate
-    source .env
 
-### Build the identifier package
+#### Build and install the identifier package
 
     pip install setuptools
     pip install build
-    pip install pytest
     python -m build
 
-## Installation
-
-This will install the identifier api in the python virtual environment:
+The build process will create the `dist` subdirectory, and put a Python package file for Identifier in it. You can use it to install the Identifier api in the python virtual environment as follows:
 
     pip install dist/co.deability.identifier-[version]-py3-none-any.whl
 
 ## Running the Identifier API
 
-### Manual startup
-
-    cd src
-    python -m co.deability.identifier.api.app
-
 ### Containerized startup
 
-    sh build.sh
+    sh exec.sh
 
-[Open your browser](https://localhost:4430/identifier) to verify that it's running, or use `curl`:
+### Manual startup
 
-    curl https://localhost:4430/identifier
+    python -m co.deability.identifier.api.app
+
+[Open your browser](https://localhost:4336/identifier) to verify that it's running, or use `curl`:
+
+    curl https://localhost:4336/identifier
 
 The output should look like this:
 
@@ -83,32 +177,11 @@ The output should look like this:
         ...
     }
 
-Note: additional information is included in pre-production environments
+_Note: additional information is included in pre-production environments_
 
 ## Contributing
 
 You can leverage tools during development to make life simpler.
-
-### Environment
-
-Create an additional environment file named `.env_dev` that specifies the following variables:
-
-    export COMPOSE_FILE=docker-compose-dev.yml
-    export CERT_SUBJ=[String; Subject line for a self-signed certificate for development;
-                      e.g., /C=US/ST=Michigan/L=Saline/O=Codeability/CN=*.localhost]
-    export LOCAL_DATA_PATH=[String; file path on a formatted block storage device mounted in the host 
-                            where identifier's data will be stored when it is run inside a container;
-                            see docker-compose-dev.yml]
-
-### Build
-
-Using the `build_dev.sh` script will shorten your build time by obviating the downloading of dependencies that are
-included in the `identifier_api` image created by `build.sh`. Note that the `build.sh` script must be run at least once
-prior to running `build_dev.sh`:
-
-    sh build.sh
-    ...
-    sh build_dev.sh
 
 ### Pre-Commit
 
@@ -125,9 +198,9 @@ hooks script using pre-commit's installer:
 
 ### Testing
 
-To run the available unit and integration tests manually:
+To run the available unit and integration tests manually, run pytest:
 
-    pytest src/tests
+    pytest
 
 ___
 _Copyright © 2021 William L Horvath II_
