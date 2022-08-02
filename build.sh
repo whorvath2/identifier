@@ -24,29 +24,27 @@ then
 fi
 
 echo "Checking environment..."
-if ! [[ -n $IDENTIFIER_DATA_PATH && -n $IDENTIFIER_LOG_LEVEL && -n $ROOT_LOG_LEVEL ]] ;
+if ! [[ -n $IDENTIFIER_DATA_PATH && -n $IDENTIFIER_LOG_LEVEL && -n $ROOT_LOG_LEVEL && -n $HOST_NAME ]] ;
 then
   echo "Error: All required environment variables aren't specified:
   IDENTIFIER_DATA_PATH: $IDENTIFIER_DATA_PATH
   IDENTIFIER_LOG_LEVEL: $IDENTIFIER_LOG_LEVEL
-  ROOT_LOG_LEVEL: $ROOT_LOG_LEVEL"
+  ROOT_LOG_LEVEL: $ROOT_LOG_LEVEL
+  HOST_NAME: $HOST_NAME"
   return 1
 fi
 
-echo "Checking for identifier certificate..."
-. ./certs/create_cert.sh "identifier"
+echo "Setting up $HOST_NAME certificate..."
+. ./certs/create_cert.sh "$HOST_NAME" "localhost"
 if ! [[ -n $HOST_CA_BUNDLE_PATH && -n $HOST_KEY_PATH && -n $HOST_CERT_PATH ]] ;
 then
-  echo "Error: HOST_CA_BUNDLE_PATH, HOST_KEY_PATH, or HOST_CERT_PATH is not specified."
+  echo "Error: HOST_CA_BUNDLE_PATH, HOST_KEY_PATH, or HOST_CERT_PATH was not set by certs/create_cert.sh"
   return 1
 fi
 
 echo "Building the Identifier image..."
 podman build \
---no-cache \
---secret id=identifier_cert_key,src="$HOST_KEY_PATH" \
---secret id=identifier_cert_pub,src="$HOST_CERT_PATH" \
---secret id=identifier_cert_ca_pub,src="$HOST_CA_BUNDLE_PATH" \
+--secret id=identifier_cert_bundle_pub,src="$HOST_CA_BUNDLE_PATH" \
 --env BUILD_ID="$BUILD_ID" \
 --env ROOT_LOG_LEVEL="$ROOT_LOG_LEVEL" \
 --env IDENTIFIER_LOG_LEVEL="$IDENTIFIER_LOG_LEVEL" \
@@ -72,8 +70,5 @@ fi
 echo "Creating identifier_api container..."
 podman create \
 --replace \
---secret=identifier_cert_key,type=mount,target=/etc/ssl/private/identifier-key.pem,mode=0400 \
---secret=identifier_cert_pub,type=mount,target=/etc/ssl/certs/identifier.pem,mode=0444 \
---secret=identifier_cert_ca_pub,type=mount,target=/usr/local/share/ca-certificates/identifier_ca.pem,mode=0444 \
 --name=identifier_api \
 localhost/identifier_api_image:latest
