@@ -23,8 +23,12 @@ from co.deability.identifier.api.repositories.entities import (
 )
 
 
-def add_entity(entity: Dict[str, Any]) -> Dict[str, str]:
+def add_entity(entity: Dict[str, Any], entity_type: str) -> Dict[str, str]:
     identifier: str = entity_repository.create_entity(entity=entity)
+    add_search_terms(
+        identifier=identifier,
+        search_terms=_entity_type_search_terms(entity_type=entity_type),
+    )
     return {"created": identifier}
 
 
@@ -44,6 +48,11 @@ def update_entity(identifier: str, entity: Dict[str, Any]) -> Dict[str, str]:
 def get_entity(identifier: str) -> Dict[str, Any]:
     repositories.check_identifier(identifier=identifier)
     return entity_repository.read_entity(identifier=identifier)
+
+
+def get_all_entities(entity_type: str) -> Dict[str, Any]:
+    search_terms = _entity_type_search_terms(entity_type=entity_type)
+    return search_for_entities(search_terms=search_terms)
 
 
 def add_search_terms(identifier: str, search_terms: Dict[str, Any]) -> None:
@@ -84,3 +93,7 @@ def update_schema(schema: Dict[str, Any], name: str) -> None:
 
 def get_schema(name: str = None) -> Dict[str, Any]:
     return entity_repository.get_schema(name=name)
+
+
+def _entity_type_search_terms(entity_type: str) -> Dict[str, str]:
+    return {"entity type": entity_type}

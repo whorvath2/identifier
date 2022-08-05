@@ -241,3 +241,16 @@ def test_update_schema(setup_entity_repository):
         assert response.status_code == HTTPStatus.NO_CONTENT
     response = _get_schema(name=name)
     assert response.json == {name: UPDATED_SCHEMA}
+
+
+def test_get_all_entities_by_type_works(setup_entity_repository, http_client):
+    entity_type = "foobar"
+    entity_id = _add_entity()
+    second_entity_id = _add_entity(entity=SECOND_ENTITY)
+    with http_client:
+        endpoint = f"{ROOT_DIR}/read/all/{entity_type}"
+        response = http_client.get(endpoint, headers=ACCEPT_JSON_HEADERS)
+        assert response.status_code == HTTPStatus.OK
+        assert response.json.get(entity_id) == ENTITY
+        assert response.json.get(second_entity_id) == SECOND_ENTITY
+        assert len(response.json) == 2

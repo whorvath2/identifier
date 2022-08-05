@@ -31,7 +31,16 @@ EMPTY_SUCCESS_RESPONSE: Final[Tuple[str, int]] = ("", HTTPStatus.NO_CONTENT)
 @entity_blueprint.get("/read/<identifier>")
 def get_entity(identifier: str):
     return make_response(
-        entity_service.get_entity(identifier=identifier), HTTPStatus.OK
+        jsonify(entity_service.get_entity(identifier=identifier)), HTTPStatus.OK
+    )
+
+
+# todo add support for paging?
+@entity_blueprint.get("/read/all/<entity_type>")
+def get_all_entities(entity_type: str):
+    return make_response(
+        jsonify(entity_service.get_all_entities(entity_type=entity_type)),
+        HTTPStatus.OK,
     )
 
 
@@ -39,7 +48,9 @@ def get_entity(identifier: str):
 @entity_blueprint.post("/add/<entity_type>")
 def add_entity(entity_type: str) -> Response:
     return make_response(
-        jsonify(entity_service.add_entity(entity=request.json)),
+        jsonify(
+            entity_service.add_entity(entity=request.json, entity_type=entity_type)
+        ),
         HTTPStatus.CREATED,
     )
 
