@@ -29,6 +29,15 @@ RUN groupadd -g $guid api-service \
     && chown -R api-service:api-service /service/identifier \
     && chown -R api-service:api-service $identifier_data_path
 
+RUN --mount=type=secret,id=root_ca_pub \
+    cat /run/secrets/root_ca_pub > /usr/local/share/ca-certificates/cacert.crt \
+    && chmod -R 744 /usr/local/share/ca-certificates \
+    && /usr/sbin/update-ca-certificates
+
+RUN --mount=type=secret,id=identifier_ca_bundle_pub \
+    cat /run/secrets/identifier_ca_bundle_pub > /etc/ssl/certs/identifier.crt \
+    && chmod 444 /etc/ssl/certs/identifier.crt
+
 WORKDIR /service/identifier
 COPY . /service/identifier
 COPY nginx.conf /etc/nginx/nginx.conf

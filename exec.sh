@@ -32,7 +32,5 @@ podman run \
 --tty \
 --name=identifier_api \
 --publish=4336:443 \
---secret identifier_cert_key,type=mount,target=/etc/ssl/private/identifier-key.pem,mode=0400 \
---secret identifier_cert_pub,type=mount,target=/etc/ssl/certs/identifier.crt,mode=0444 \
---secret identifier_cert_bundle_pub,type=mount,target=/usr/local/share/ca-certificates/identifier_ca.crt,mode=0444 \
+--secret identifier_cert_key,type=mount,target=/etc/ssl/private/identifier-key.pem,mode=0440 \
 localhost/identifier_api_image:latest

@@ -36,15 +36,17 @@ fi
 
 echo "Setting up $HOST_NAME certificate..."
 . ./certs/create_cert.sh "$HOST_NAME" "localhost"
-if ! [[ -n $HOST_CA_BUNDLE_PATH && -n $HOST_KEY_PATH && -n $HOST_CERT_PATH ]] ;
+if ! [[ -n $HOST_CERT_BUNDLE_PATH && -n $HOST_KEY_PATH && -n $HOST_CERT_PATH && -n $ROOT_CA_PATH ]] ;
 then
-  echo "Error: HOST_CA_BUNDLE_PATH, HOST_KEY_PATH, or HOST_CERT_PATH was not set by certs/create_cert.sh"
+  echo "Error: HOST_CERT_BUNDLE_PATH, HOST_KEY_PATH, HOST_CERT_PATH, or ROOT_CA_PATH was not set by certs/create_cert.sh"
   return 1
 fi
 
 echo "Building the Identifier image..."
 podman build \
---secret id=identifier_cert_bundle_pub,src="$HOST_CA_BUNDLE_PATH" \
+--no-cache \
+--secret id=root_ca_pub,src="$ROOT_CA_PATH" \
+--secret id=identifier_ca_bundle_pub,src="$HOST_CERT_BUNDLE_PATH" \
 --env BUILD_ID="$BUILD_ID" \
 --env ROOT_LOG_LEVEL="$ROOT_LOG_LEVEL" \
 --env IDENTIFIER_LOG_LEVEL="$IDENTIFIER_LOG_LEVEL" \
