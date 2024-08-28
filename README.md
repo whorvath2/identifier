@@ -2,12 +2,7 @@
 
 An API to provide entity identifiers and user-defined search indexing as a service.
 
-Identifier provides an API by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. The API also allows the client to specify any arbitrary document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
-
-The longer-term goal of this project is to not only provide new unique identifiers, but to accept
-entity data and supply existing identifiers based on identity-matching algorithms that offer the
-client a customizable degree of certainty that those attributes have been matched to an entity 
-already known to the instance.
+Identifier provides an API by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. The API also allows the client to specify any arbitrary JSON document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
 
 ## Principles of Operation
 
