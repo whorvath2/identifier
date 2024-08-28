@@ -54,7 +54,7 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
     {                                                                       {
         "MRN": "0123456789",                                                    "created": "543fc679f3923d14916f122042e0c3f9"
         "First Name": "William"                                             }
-        ...
+        ... # Additional patient data
     }                                                                      
 
     # Add a search index term for an existing identifier
