@@ -66,7 +66,7 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
     }
 
     # Search by an index term for matching identifier(s)
-    GET https://example.com/search                                    200
+    GET https://example.com/search                                          200
     {                                                                       [{
         "First": "William",                                                     "543fc679f3923d14916f122042e0c3f9": {  
         "Last": "Horvath",                                                          {
