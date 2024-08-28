@@ -57,7 +57,7 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
         ...
     }                                                                      
 
-    # Add a search index term for an existing identifier...
+    # Add a search index term for an existing identifier
     POST https://example.com/index/add/543fc679f3923d14916f122042e0c3f9     200
     {
         "First": "William", 
