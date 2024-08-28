@@ -20,20 +20,20 @@ The Identifier API is designed to support the following general workflows:
 
 *Entity Creation, Updating, and Deletion*
 
-* POST entity data -> Receive entity identifier + success code
-* UPDATE entity data -> Receive entity identifier + success code
-* DELETE entity data -> Receive success code
+* POST + entity data -> Receive entity identifier + success code
+* UPDATE + entity identifier + entity data -> Receive new entity identifier + success code
+* DELETE + entity identifier -> Receive success code
 
 *Search Term Creation and Deletion*
 
-* POST entity identifier and search term document -> Receive success code
-* DELETE search term -> Receive success code
+* POST + entity identifier + search term document -> Receive success code
+* DELETE + search term -> Receive success code
 
 *Entity Search*
 
-* GET request with identifier -> Receive entity data + success code
-* GET entity search request with search term document -> Receive list of entity identifiers and entity data + success code
-* GET entity identifier search request with search term document -> Receive list of entity identifiers + success code
+* GET request + identifier -> Receive entity data + success code
+* GET entity search request + search term document -> Receive list of entity identifiers and entity data + success code
+* GET entity identifier search request + search term document -> Receive list of entity identifiers + success code
 
 In the current release, both entity data and search term data must be JSON documents. This will likely change in a future version of the API.
 
