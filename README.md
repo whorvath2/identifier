@@ -65,7 +65,7 @@ The Identifier API is designed to support the following general workflows:
 
 #### <a name="usecase">Workflow Use Case Example</a>
 
-A healthcare provider wants to use Identifier to store patients, and to be able to find patients by a combination of first name, last name, and birthday. They configure their client to add a patient entity to Identifier, and after receiving that patient's identifier in response, they add a search index for that identifier consisting of that patient's first name, last name, and birthday. They can then submit the same index to retrieve any matching pateint entities:
+A healthcare provider wants to use Identifier to identify patients for their internal systems, and to be able to find patients by a combination of last name and birthday. They configure their client to add a patient entity to Identifier, and after receiving that patient's identifier in response, they add a search index for that identifier consisting of that patient's last name and birthday. They can then submit the same index to retrieve any matching pateint entities:
 
     REQUEST                                                                 RESPONSE
 
