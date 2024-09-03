@@ -73,14 +73,15 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
     POST https://example.com/add/Patient                                    202 
     {                                                                       {
         "MRN": "0123456789",                                                    "created": "543fc679f3923d14916f122042e0c3f9"
-        "First Name": "William"                                             }
+        "First Name": "William"
+        "Last Name": "Horvath"
+        "DOB": "01/01/1970"
         ... # Additional patient data
     }                                                                      
 
     # Add a search index term for an existing identifier
     POST https://example.com/index/add/543fc679f3923d14916f122042e0c3f9     200
     {
-        "First": "William", 
         "Last": "Horvath", 
         "Birthday": "01/01/1970"
     }
@@ -88,20 +89,22 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
     # Search by an index term for matching identifier(s)
     GET https://example.com/search                                          200
     {                                                                       [{
-        "First": "William",                                                     "543fc679f3923d14916f122042e0c3f9": {  
-        "Last": "Horvath",                                                          {
-        "Birthday": "01/01/1970"                                                        "MRN": "0123456789",
-    }                                                                                   "First Name": "William",
+        "Last": "Horvath",                                                     "543fc679f3923d14916f122042e0c3f9": {  
+        "Birthday": "01/01/1970"                                                    {
+    }                                                                                   "MRN": "0123456789",
+                                                                                        "First Name": "William",
+                                                                                        "Last Name": "Horvath"
                                                                                         ...
                                                                                     },
                                                                                  },
                                                                                 "c3632b96fd3c0c5f6e2e0cb64497ced7": {
                                                                                     {
                                                                                         "MRN": "222222222",
-                                                                                        "First Name": "Aimee",
+                                                                                        "First Name": "Elizabeth",
+                                                                                        "Last Name": "Horvath"
                                                                                         ...
                                                                                     }
-                                                                            }]
+                                                                             }]
 
 ## Setup
 
