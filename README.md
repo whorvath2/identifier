@@ -1,47 +1,67 @@
 # Identifier
 
-An API to provide entity identifiers and user-defined search indexing as a service.
+A REST API to provide entity identifiers and user-defined search indexing as a service.
 
-Identifier provides an API by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. The API also allows the client to specify any arbitrary JSON document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
+Identifier provides a means by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. It also allows users to specify any arbitrary JSON document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
+
+## Features
+
+  - **Generation of entity identifiers** on demand based on client-supplied JSON entity data.
+  - **Entity identifiers are guaranteed to be unique** by use of a deterministic mechanism that eliminates the possibility of duplicates being distributed.
+  - **Validation of entities** via JSON schema can be used to reject bad data before an identifier for it is even generated.
+  - **Updating entity identifiers** allows entities whose data has changed to receive new identifiers without invalidating the old ones - Both old and new point to the current data.
+  - **User-defined search indexing** allows users to specify the terms by which one or more existing identifiers can be found.
+  - **Entirely self-contained operations** means a separate database is not required.
+  - **Designed for containerization** so that multiple Identifier instances can be deployed using a shared VM or [pod](https://kubernetes.io/docs/concepts/workloads/pods/) with a common data store.
 
 ## Principles of Operation
 
 ### Data Storage
 
-Identifier is designed to use a block file system as the data store for the identifiers it generates, with the user-configurable IDENTIFIER_DATA_PATH being the parent directory. Each identifier value is stored as a folder hierarchy when it is generated, such that each character of the identifier is a directory. _E.g._, an identifier value of `foobar` is serialized into the file system at `<IDENTIFIER_DATA_PATH>/f/o/o/b/a/r/`.
+At the repository layer in the current release, Identifer leverages the host's file system (with the user-configurable `IDENTIFIER_DATA_PATH` designating the parent directory) as the data store for the identifiers generated, which obviates the need for a traditional database. In a containerized environment with multiple Identifier instances, administrators should use the file system on the host VM for the backing data store of the containers, and for performance reasons, the host VM should use direct-attached drives (as opposed to NFS or SMB mounts) for storage.
 
 The length of the identifiers used in any particular Identifier instance are user-configurable via the environment variable `IDENTIFIER_ID_LENGTH`, which (if specified) must be a value between 16 and 128 inclusive. The default value is 32.
 
-For performance reasons, it is recommended that identifier containers use the file system on the host VM for the backing data store, and that the host VM use direct-attached drives (as opposed to NFS or SMB mounts) for storage.
+### Entity and Search Term Operations
 
-#### Workflows
+#### Creating Entity Identifiers
+
+By default, Identifier creates identifiers for entities that reflect the definition of the entity; _i.e._, identifier generation for entities is _deterministic_, rather than random or incremental. In the current release, entity data must be defined using JSON documents. If an attempt is made to create an identifier for an entity that is already known to the Identifier instance, an error will be returned.
+
+#### Entity Validation
+
+Identifier supports validation of entities being POSTed by way of user-supplied JSON schema for each entity type, and schema can be created, read, updated, and deleted via corresponding API endpoints that accept the schema and a name for the entity type to which it applies. Once added to an Identifier instance, they will automatically be applied to validate entities of the corresponding type when those entities are added to that instance. When validation fails, the client will receive an error code and informative message indicating that the entity failed validation.
+
+#### Updating Existing Identifiers for Changed Entities
+
+When an entity with an existing identifier has changed, its new definition can be submitted to the API with its current identifier. Under such conditions, a new identifier for the entity is generated, and the previous data file is replaced with a link to the new entity data file. Subsequent read requests using either the old or new identifier values will both return the same (current) entity data in the response.
+
+#### User-Defined Search Indexing
+
+Identifier can accept any JSON document as a search term for one or more identifiers that it has already generated. When a client adds a search term to an identifier for an entity to which that term refers, an identifier file for the search term is created which links directly back to the entity file.
+
+The same search term can be linked to any arbitrary number of existing entity identifiers, and those entities or their identifiers can be retrieved by using the search term in the body of subsequent GET requests to the appropriate `search` endpoints.
+
+### Workflows
 
 The Identifier API is designed to support the following general workflows:
 
-*Entity Creation, Updating, and Deletion*
+#### Entity Creation, Updating, and Deletion
 
 * POST + entity data -> Receive entity identifier + success code
 * UPDATE + entity identifier + entity data -> Receive new entity identifier + success code
 * DELETE + entity identifier -> Receive success code
 
-*Search Term Creation and Deletion*
+#### Search Term Creation and Deletion
 
 * POST + entity identifier + search term document -> Receive success code
 * DELETE + search term -> Receive success code
 
-*Entity Search*
+#### Entity Search
 
 * GET request + identifier -> Receive entity data + success code
 * GET entity search request + search term document -> Receive list of entity identifiers and entity data + success code
 * GET entity identifier search request + search term document -> Receive list of entity identifiers + success code
-
-In the current release, both entity data and search term data must be JSON documents. This will likely change in a future version of the API.
-
-Identifier stores entities and create identifiers for them that reflect the content of the entity's data; i.e., identifier generation for entities is _deterministic_, rather than random or incremental. If an attempt is made to re-add an entity that is already known to the Identifier instance, an error will be returned.
-
-When an entity is updated, a new identifier for the entity is generated, and the previous data file is replaced with a link to the new entity data file. Subsequent read requests using either the old or new identifier values will both return the same (current) entity data in the response.
-
-Any particular search term can be attached to more than one entity identifier, so that a list of matching entity identifiers (and, optionally, entity data) can be retrieved by that term.
 
 #### Workflow Use Case Example
 
@@ -82,16 +102,6 @@ A healthcare provider wants to use Identifier to store patients, and to be able 
                                                                                         ...
                                                                                     }
                                                                             }]
-
-##### Search Indexing
-
-Identifier can accept any JSON document as a search term for one or more existing entity identifiers. When the user adds a search term and an identifier for an entity to which that term refers, an identifier file for the search term is created which links directly back to the entity file. 
-
-The same search term can be linked to any arbitrary number of already-storied entity identifiers, and those entities or their identifiers can be retrieved by using the search term in the body of subsequent GET requests to the appropriate `search` endpoints.
-
-##### Entity Validation
-
-Identifier supports validation of entities being POSTed for storage by way of user-supplied JSON schema for each entity type. Schema can be created, read, updated, and deleted via corresponding API endpoints that accept the schema and a name for the entity type to which it applies. Once added to an Identifier instance, they will automatically be applied to validate entities of the corresponding type when those entities are added to that instance. When validation fails, the client will receive an error code and informative message indicating that the entity failed validation.
 
 ## Setup
 
