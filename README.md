@@ -2,7 +2,7 @@
 
 A REST API to provide entity identifiers and user-defined search indexing as a service.
 
-Identifier provides a means by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. It also allows users to specify any arbitrary JSON document as search terms for any particular entity. For a detailed example, see *Principles of Operation: Use Case Example*, below
+Identifier provides a means by which identifiers for entities can be requested that are guaranteed to be unique within the context of the service instance's backing data store. It also allows users to specify any arbitrary JSON document as search terms for any particular entity. For a detailed example, see the [workflow use case](#usecase) below.
 
 ## Features
 
@@ -63,7 +63,7 @@ The Identifier API is designed to support the following general workflows:
 * GET entity search request + search term document -> Receive list of entity identifiers and entity data + success code
 * GET entity identifier search request + search term document -> Receive list of entity identifiers + success code
 
-#### Workflow Use Case Example
+#### <a name="usecase">Workflow Use Case Example</a>
 
 A healthcare provider wants to use Identifier to store patients, and to be able to find patients by a combination of first name, last name, and birthday. They configure their client to add a patient entity to Identifier, and after receiving that patient's identifier in response, they add a search index for that identifier consisting of that patient's first name, last name, and birthday. They can then submit the same index to retrieve any matching pateint entities:
 
